@@ -9,7 +9,7 @@ namespace Backend_Website.Models
         public DbSet<Address> Addresses                 {get; set;}
         public DbSet<Brand> Brands                      {get; set;}
         public DbSet<Cart> Carts                        {get; set;}
-        public DbSet<CartProduct> CartProduct           {get; set;}
+        public DbSet<CartProduct> CartProducts          {get; set;}
         public DbSet<Category> Categories               {get; set;}
         public DbSet<Category_Type> CategoryType        {get; set;}
         public DbSet<Collection> Collections            {get; set;}

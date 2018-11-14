@@ -28,7 +28,7 @@ namespace Backend_Website
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<WebshopContext>(opt => opt.UseNpgsql(@"Host=localhost;Database=WebshopData;Username=postgres;Password=Postgresqlpasword"));
+            services.AddDbContext<WebshopContext>(opt => opt.UseNpgsql(@"Host=localhost;Database=WebshopData;Username=postgres;Password=12345"));
             services.AddMvc();
         }
 
