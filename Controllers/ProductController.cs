@@ -41,6 +41,15 @@ namespace Backend_Website.Controllers
             return Ok(res);
         }
 
+        // GET api/product/imageurl/5
+        [HttpGet("imageurl/{id}")]
+        public IActionResult GetImageURLs(int id)
+        {
+            //Get a list of all ImageURLs that belong to the product that has the given id
+            var res = (from p in _context.Products from i in _context.ProductImages where p.Id == i.ProductId && p.Id == id select i.ImageURL).ToList();
+            return Ok(res);
+        }
+
 
         // GET api/product/1/10
         // GET api/product/{page number}/{amount of products on a page}
@@ -49,6 +58,7 @@ namespace Backend_Website.Controllers
         {
             //Get a list of the right products, ordered by id
             //page_index-1 so the first page is 1 and not 0
+
             var res = _context.Products.GetPage<Product>(page_index-1, page_size, p => p.Id);
             return Ok(res);
         }
