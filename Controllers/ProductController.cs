@@ -3,37 +3,67 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Backend_Website.Models;
 
 namespace Backend_Website.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-    public class ProductController : ControllerBase
-    {
-        // GET api/values
-        [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+
+    public class ProductController : Controller
+    {private readonly WebshopContext _context;
+
+        public ProductController (WebshopContext context){ _context = context;}
+    
+        
+    
+
+        // GET api/product
+         [HttpGet]
+        public IActionResult GetAllProducts()
         {
-            return new string[] { "value1", "value2" };
+            var res = (from p in _context.Products orderby p.Id select p).ToList();
+
+            return Ok(res);
         }
 
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
-        {
-            return "value";
-        }
 
-        // POST api/values
+        // GET api/product/details/5
+        [HttpGet("details/{id}")]
+        public IActionResult GetProductDetails(int id)
+        {
+            var res = (from p in _context.Products  where p.Id == id select p);
+            return Ok(res);
+                    }
+
+        // POST api/product
+        //verplicht meegeven: id, _typeid, categoryid, collectionid, brandid, stockid
         [HttpPost]
-        public void Post([FromBody] string value)
-        {
+        public void CreateNewProduct([FromBody] Product product)
+        {    
+            _context.Products.Add(product);
+            _context.SaveChanges();
         }
 
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        // PUT api/product/5
+              [HttpPut("{id}")]
+        public void UpdateExistingProduct(int id, [FromBody] Product product)
         {
+           Product p = _context.Products.Find(id);
+           if(product.ProductNumber != null){p.ProductNumber = product.ProductNumber;}
+           if(product.ProductEAN != null){p.ProductEAN = product.ProductEAN;}
+           if(product.ProductInfo != null){p.ProductInfo = product.ProductInfo;}
+           if(product.ProductDescription != null){p.ProductDescription = product.ProductDescription;}
+           if(product.ProductSpecification != null){p.ProductSpecification = product.ProductSpecification;}
+           if(product.ProductPrice != null){p.ProductPrice = product.ProductPrice;}
+           if(product.ProductColor != null){p.ProductColor = product.ProductColor;}
+           if(product._TypeId!= null){p._TypeId = product._TypeId;}
+           if(product.CategoryId != null){p.CategoryId = product.CategoryId;}
+           if(product.CollectionId != null){p.CollectionId = product.CollectionId;}
+           if(product.BrandId != null){p.BrandId = product.BrandId;}
+           if(product.StockId != null){p.StockId = product.StockId;}
+
+            _context.Update(p);
+            _context.SaveChanges();
         }
 
         // DELETE api/values/5
