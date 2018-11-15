@@ -66,10 +66,13 @@ namespace Backend_Website.Controllers
             _context.SaveChanges();
         }
 
-        // DELETE api/values/5
+        // DELETE api/product/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public void DeleteProduct(int id)
         {
+           Product Product = _context.Products.Find(id);
+           _context.Products.Remove(Product);
+           _context.SaveChanges();
         }
     }
 }
