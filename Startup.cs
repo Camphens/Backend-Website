@@ -18,9 +18,18 @@ namespace Backend_Website
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        // public Startup(IConfiguration configuration)
+        // {
+        //     Configuration = configuration;
+        // }
+
+        public Startup(IHostingEnvironment env)
         {
-            Configuration = configuration;
+            var builder = new ConfigurationBuilder();
+            builder.SetBasePath(env.ContentRootPath);
+            builder.AddJsonFile("appsettings.json", false, true);
+            builder.AddJsonFile("databasestring.json", false, true);
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; }
