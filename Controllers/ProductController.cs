@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Backend_Website.Models;
+using ExtensionMethods;
+using restserver.Paginator;
 
 namespace Backend_Website.Controllers
 {
@@ -34,6 +36,15 @@ namespace Backend_Website.Controllers
             var res = (from p in _context.Products  where p.Id == id select p);
             return Ok(res);
                     }
+
+
+        // GET api/product/1/10
+        // GET api/product/{page number}/{amount of products on a page}
+        [HttpGet("{page_index}/{page_size}")]
+        public IActionResult GetProductsPerPage(int page_index, int page_size){
+            var res = _context.Products.GetPage<Product>(page_index-1, page_size, p => p.Id);
+            return Ok(res);
+        }
 
         // POST api/product
         //verplicht meegeven: id, _typeid, categoryid, collectionid, brandid, stockid
