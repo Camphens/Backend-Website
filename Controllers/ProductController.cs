@@ -54,13 +54,13 @@ namespace Backend_Website.Controllers
            if(product.ProductInfo != null){p.ProductInfo = product.ProductInfo;}
            if(product.ProductDescription != null){p.ProductDescription = product.ProductDescription;}
            if(product.ProductSpecification != null){p.ProductSpecification = product.ProductSpecification;}
-           if(product.ProductPrice != null){p.ProductPrice = product.ProductPrice;}
+           if(product.ProductPrice != 0){p.ProductPrice = product.ProductPrice;}
            if(product.ProductColor != null){p.ProductColor = product.ProductColor;}
-           if(product._TypeId!= null){p._TypeId = product._TypeId;}
-           if(product.CategoryId != null){p.CategoryId = product.CategoryId;}
-           if(product.CollectionId != null){p.CollectionId = product.CollectionId;}
-           if(product.BrandId != null){p.BrandId = product.BrandId;}
-           if(product.StockId != null){p.StockId = product.StockId;}
+           if(product._TypeId!= 0){p._TypeId = product._TypeId;}
+           if(product.CategoryId != 0){p.CategoryId = product.CategoryId;}
+           if(product.CollectionId != 0){p.CollectionId = product.CollectionId;}
+           if(product.BrandId != 0){p.BrandId = product.BrandId;}
+           if(product.StockId != 0){p.StockId = product.StockId;}
 
             _context.Update(p);
             _context.SaveChanges();
