@@ -3,15 +3,17 @@ using System;
 using Backend_Website.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace BackendWebsite.Migrations
 {
     [DbContext(typeof(WebshopContext))]
-    partial class WebshopContextModelSnapshot : ModelSnapshot
+    [Migration("20181115113112_Removed_History")]
+    partial class Removed_History
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -339,12 +341,12 @@ namespace BackendWebsite.Migrations
                     b.HasOne("Backend_Website.Models.Cart", "Cart")
                         .WithMany("Products")
                         .HasForeignKey("CartId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Backend_Website.Models.Product", "Product")
                         .WithMany("Carts")
                         .HasForeignKey("CartId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Backend_Website.Models.Category_Type", b =>
@@ -352,12 +354,12 @@ namespace BackendWebsite.Migrations
                     b.HasOne("Backend_Website.Models.Category", "Category")
                         .WithMany("_Types")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Backend_Website.Models._Type", "_Type")
                         .WithMany("Categories")
                         .HasForeignKey("_TypeId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Backend_Website.Models.Collection", b =>
@@ -365,7 +367,7 @@ namespace BackendWebsite.Migrations
                     b.HasOne("Backend_Website.Models.Brand")
                         .WithMany("Collections")
                         .HasForeignKey("BrandId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Backend_Website.Models.Order", b =>
@@ -373,12 +375,12 @@ namespace BackendWebsite.Migrations
                     b.HasOne("Backend_Website.Models.Address")
                         .WithMany("Orders")
                         .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Backend_Website.Models.OrderStatus")
                         .WithMany("Orders")
                         .HasForeignKey("OrderStatusId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Backend_Website.Models.OrderProduct", b =>
@@ -386,12 +388,12 @@ namespace BackendWebsite.Migrations
                     b.HasOne("Backend_Website.Models.Order", "Order")
                         .WithMany("Products")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Backend_Website.Models.Product", "Product")
                         .WithMany("Orders")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Backend_Website.Models.Product", b =>
@@ -399,27 +401,27 @@ namespace BackendWebsite.Migrations
                     b.HasOne("Backend_Website.Models.Brand")
                         .WithMany("Products")
                         .HasForeignKey("BrandId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Backend_Website.Models.Category")
                         .WithMany("Products")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Backend_Website.Models.Collection")
                         .WithMany("Products")
                         .HasForeignKey("CollectionId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Backend_Website.Models.Stock")
                         .WithMany("Products")
                         .HasForeignKey("StockId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Backend_Website.Models._Type")
                         .WithMany("Products")
                         .HasForeignKey("_TypeId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Backend_Website.Models.ProductImage", b =>
@@ -427,7 +429,7 @@ namespace BackendWebsite.Migrations
                     b.HasOne("Backend_Website.Models.Product")
                         .WithMany("ProductImages")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Backend_Website.Models.UserAddress", b =>
@@ -435,12 +437,12 @@ namespace BackendWebsite.Migrations
                     b.HasOne("Backend_Website.Models.Address", "Addresses")
                         .WithMany("Users")
                         .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Backend_Website.Models.User", "User")
                         .WithMany("Addresses")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Backend_Website.Models.WishlistProduct", b =>
@@ -448,12 +450,12 @@ namespace BackendWebsite.Migrations
                     b.HasOne("Backend_Website.Models.Product", "Product")
                         .WithMany("Wishlists")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Backend_Website.Models.Wishlist", "Wishlist")
                         .WithMany("Products")
                         .HasForeignKey("WishlistId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

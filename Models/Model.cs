@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Backend_Website.Models
 {
@@ -13,7 +14,6 @@ namespace Backend_Website.Models
         public DbSet<Category> Categories               {get; set;}
         public DbSet<Category_Type> CategoryType        {get; set;}
         public DbSet<Collection> Collections            {get; set;}
-        public DbSet<History> OrderHistory              {get; set;}
         public DbSet<Order> Orders                      {get; set;}
         public DbSet<OrderProduct> OrderProduct         {get; set;}
         public DbSet<OrderStatus> OrderStatus           {get; set;}
@@ -39,7 +39,10 @@ namespace Backend_Website.Models
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
+        {foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
+{
+    relationship.DeleteBehavior = DeleteBehavior.Restrict;
+}
             modelBuilder.Entity<Category_Type>()
             .HasKey(ct => new {ct.CategoryId, ct._TypeId});
             modelBuilder.Entity<Category_Type>()
@@ -156,19 +159,12 @@ namespace Backend_Website.Models
         public List<Product> Products {get; set;}
     }
 
-    public class History
-    {
-        public int Id {get; set;}
-        public int UserId {get; set;}
-        public List<Order> Orders {get; set;}
-    }
 
     public class Order
     {
         public int Id {get; set;}
         public int UserId {get; set;}
         public int AddressId {get; set;}
-        public int HistoryId {get; set;}
         public int OrderStatusId {get; set;}
         public double OrderTotalPrice {get; set;}
         public DateTime OrderDate {get; set;}
