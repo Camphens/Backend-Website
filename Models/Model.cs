@@ -119,11 +119,11 @@ namespace Backend_Website.Models
     public class Cart
     {
         public int Id {get; set;}
-        public int UserId {get; set;}
+        public int? UserId {get; set;}
         public double CartTotalPrice {get; set;}
         public List<CartProduct> Products {get; set;}
     }
-
+ 
     public class CartProduct
     {
         public int CartId {get; set;}

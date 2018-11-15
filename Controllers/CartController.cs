@@ -19,7 +19,7 @@ namespace Backend_Website.Controllers
         // GET api/cart
         
         [HttpGet("GetItemsInCart")]
-        public IActionResult GetItemsInCart()
+        public ActionResult GetItemsInCart()
         {
            var something = (from products in _context.Products
                            select products).ToList();
@@ -35,10 +35,21 @@ namespace Backend_Website.Controllers
         }
 
         // POST api/cart
-        [HttpPost]
-        public void Post([FromBody] string value)
+        [HttpPost("MakeACart")]
+        public void Post([FromBody] Cart Cart1)
         {
+            
+            _context.Carts.Add(Cart1);
+            _context.SaveChanges();
         }
+
+        [HttpPost("MakeAUser")]
+        public void Post5([FromBody] User User1)
+        {
+            _context.Users.Add(User1);
+            _context.SaveChanges();
+        }
+        
 
         // PUT api/cart/5
         [HttpPut("{id}")]
