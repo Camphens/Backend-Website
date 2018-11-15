@@ -39,10 +39,11 @@ namespace Backend_Website.Models
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
-{
-    relationship.DeleteBehavior = DeleteBehavior.Restrict;
-}
+        {
+            //Remove On Cascade for all relationships
+            foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys())){
+            relationship.DeleteBehavior = DeleteBehavior.Restrict;
+        }
             modelBuilder.Entity<Category_Type>()
             .HasKey(ct => new {ct.CategoryId, ct._TypeId});
             modelBuilder.Entity<Category_Type>()
