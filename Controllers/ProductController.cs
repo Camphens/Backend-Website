@@ -20,24 +20,48 @@ namespace Backend_Website.Controllers
             _context = context;
         }
         
-            
+        public class Complete_Product
+        {
+            public Product Product{get;set;}
+            public string[] Images {get;set;}
+            public IQueryable<string> Type{get;set;}
+            public IQueryable<string> Category{get;set;}
+            public IQueryable<string> Collection{get;set;}
+            public IQueryable<string> Brand {get;set;}
+            public IQueryable<int> Stock{get;set;}
+        }    
+
         // GET api/product
         [HttpGet]
         public IActionResult GetAllProducts()
         {
             //Get a list of all products from the table Products and order them by Id
-            var res = (from p in _context.Products orderby p.Id select p).ToList();
-
+            var res = (from p in _context.Products orderby p let images = 
+            (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+            let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
+            let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
+            let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
+            let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
+            let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
+            select new Complete_Product(){Product = p, Images = images, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock}).ToArray();
             return Ok(res);
         }
 
+        
 
         // GET api/product/details/5
         [HttpGet("details/{id}")]
         public IActionResult GetProductDetails(int id)
         {
             //Get a list of all products from the table products with the given id
-            var res = (from p in _context.Products  where p.Id == id select p);
+            var res = (from p in _context.Products  where p.Id == id let images = 
+            (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+            let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
+            let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
+            let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
+            let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
+            let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
+            select new Complete_Product(){Product = p, Images = images, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock}).ToArray();
             return Ok(res);
         }
 
@@ -64,7 +88,7 @@ namespace Backend_Website.Controllers
         }
 
         // POST api/product
-        //verplicht meegeven: id, _typeid, categoryid, collectionid, brandid, stockid
+        //verplicht meegeven: _typeid, categoryid, collectionid, brandid, stockid
         [HttpPost]
         //Gets input from the body that is type Product (in Json)
         public void CreateNewProduct([FromBody] Product product)

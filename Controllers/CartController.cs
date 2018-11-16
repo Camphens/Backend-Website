@@ -28,7 +28,8 @@ namespace Backend_Website.Controllers
                                     from product in _context.Products
                                     where entry.CartId == cart.Id && entry.ProductId == product.Id
                                     select product).ToArray()
-                                    select new Items_in_Cart(){ Cart = cart, AllItems = cart_items }
+                                    let image = (from p in cart_items from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL)
+                                    select new Items_in_Cart(){ Cart = cart, AllItems = cart_items, Image = image }
                                    ).ToArray();
 
             return products_in_cart;
@@ -37,6 +38,8 @@ namespace Backend_Website.Controllers
         {
             public Cart Cart { get; set; }
             public Product[] AllItems { get; set; }
+
+            public IEnumerable<string> Image {get;set;}
         }
 
 
