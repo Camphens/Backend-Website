@@ -34,6 +34,11 @@ namespace Backend_Website.Controllers
             public int totalpages {get;set;}
             public Complete_Product[] products {get;set;}
         }
+
+        public class SearchProduct{
+            public int totalitems{get;set;}
+            public IOrderedQueryable products {get;set;}
+        }
         // GET api/product
         [HttpGet]
         public IActionResult GetAllProducts()
@@ -154,6 +159,14 @@ namespace Backend_Website.Controllers
             //Delete the found products and save
             _context.Products.Remove(Product);
             _context.SaveChanges();
+        }
+
+        [HttpGet("{searchstring}")]
+        public IActionResult Search(string searchstring)
+        {
+            var res = (from p in _context.Products where p.ProductName.Contains(searchstring) | p.ProductNumber.Contains(searchstring) orderby p.Id select p);
+            SearchProduct searchProduct = new SearchProduct {totalitems = res.Count(), products = res};
+            return Ok(searchProduct);
         }
     }
 }
