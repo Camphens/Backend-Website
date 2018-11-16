@@ -12,55 +12,57 @@ namespace Backend_Website.Controllers
     public class CartController : Controller
     {
         private readonly WebshopContext _context;
-        
-        public CartController(WebshopContext context){
+
+        public CartController(WebshopContext context)
+        {
             _context = context;
         }
         // GET api/cart
-        
+
         [HttpGet("GetItemsInCart")]
-        public ActionResult GetItemsInCart()
+        public Items_in_Cart[] GetItemsInCart()
         {
-           var something = (from products in _context.Products
-                           select products).ToList();
-            return Ok(something);
-           
+            var products_in_cart = (from cart in _context.Carts
+                                   let cart_items =
+                                   (from entry in _context.CartProducts
+                                    from product in _context.Products
+                                    where entry.CartId == cart.Id && entry.ProductId == product.Id
+                                    select product).ToArray()
+                                    select new Items_in_Cart(){ Cart = cart, AllItems = cart_items }
+                                   ).ToArray();
+
+            return products_in_cart;
+        }
+        public class Items_in_Cart
+        {
+            public Cart Cart { get; set; }
+            public Product[] AllItems { get; set; }
         }
 
-        // GET api/cart/5
-        [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
-        {
-            return "value";
-        }
 
         // POST api/cart
         [HttpPost("MakeACart")]
-        public void Post([FromBody] Cart Cart1)
+        public void Post([FromBody] Cart Cart)
         {
-            
-            _context.Carts.Add(Cart1);
+            //moet nog afgemaakt worden
+            _context.Carts.Add(Cart);
             _context.SaveChanges();
         }
 
-        [HttpPost("MakeAUser")]
-        public void Post5([FromBody] User User1)
-        {
-            _context.Users.Add(User1);
-            _context.SaveChanges();
-        }
         
-
-        // PUT api/cart/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
 
         // DELETE api/cart/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public ActionResult Delete(int id)
         {
+            var product_in_cart = _context.CartProducts.Find(id);
+            if (product_in_cart == null)
+            {
+                return NotFound();
+            }
+            _context.CartProducts.Remove(product_in_cart);
+            _context.SaveChanges();
+            return Ok(product_in_cart);
         }
     }
 }

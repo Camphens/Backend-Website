@@ -44,7 +44,7 @@ namespace Backend_Website.Controllers
 
         // POST api/cart
         [HttpPost("MakeOrder")]
-        public void Post([FromBody] Order Order)
+        public void MakeOrder([FromBody] Order Order)
         {
 
             _context.Orders.Add(Order);
