@@ -4,8 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Backend_Website.Models;
-using ExtensionMethods;
-using restserver.Paginator;
+
 
 namespace Backend_Website.Controllers
 {
@@ -29,8 +28,12 @@ namespace Backend_Website.Controllers
             public IQueryable<string> Collection{get;set;}
             public IQueryable<string> Brand {get;set;}
             public IQueryable<int> Stock{get;set;}
-        }    
+        }   
 
+        public class PaginationPage{
+            public int totalpages {get;set;}
+            public Complete_Product[] products {get;set;}
+        }
         // GET api/product
         [HttpGet]
         public IActionResult GetAllProducts()
@@ -80,11 +83,29 @@ namespace Backend_Website.Controllers
         [HttpGet("{page_index}/{page_size}")]
         public IActionResult GetProductsPerPage(int page_index, int page_size)
         {
-            //Get a list of the right products, ordered by id
-            //page_index-1 so the first page is 1 and not 0
+            //Get a list of all products with all related info from other tables, ordered by id
+            var res = (from p in _context.Products orderby p let images = 
+            (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+            let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
+            let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
+            let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
+            let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
+            let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
+            select new Complete_Product(){Product = p, Images = images, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock}).ToArray();
 
-            var res = _context.Products.GetPage<Product>(page_index-1, page_size, p => p.Id);
-            return Ok(res);
+            
+            int totalitems = res.Count();
+            int totalpages = totalitems / page_size;
+            //totalpages+1 because the first page is 1 and not 0
+            totalpages = totalpages+1;
+            string Error = "Error";
+            if (res.Count() < 1 | page_index < 1) return Ok(Error);
+            //page_index-1 so the first page is 1 and not 0
+            page_index = page_index-1;
+            int skip = page_index * page_size;
+            res = res.Skip(skip).Take(page_size).ToArray();
+            PaginationPage page = new PaginationPage {totalpages = totalpages, products = res};
+            return Ok(page);
         }
 
         // POST api/product
