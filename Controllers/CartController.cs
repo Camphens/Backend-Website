@@ -27,6 +27,10 @@ namespace Backend_Website.Controllers
                                    (from entry in _context.CartProducts
                                     from product in _context.Products
                                     where entry.CartId == cart.Id && entry.ProductId == product.Id
+                                        let img_url = 
+                                        (from images in _context.ProductImages
+                                        where entry.ProductId == images.ProductId
+                                        select images).ToArray()
                                     select product).ToArray()
                                     let image = (from p in cart_items from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL)
                                     select new Items_in_Cart(){ Cart = cart, AllItems = cart_items, Image = image }
@@ -52,13 +56,6 @@ namespace Backend_Website.Controllers
             _context.SaveChanges();
         }
 
-        
-        [HttpGet("GetUser/{id}")]
-        public IActionResult GetProductDetails(int id)
-        {
-            var res = (from p in _context.Carts  where p.Id == id select p);
-            return Ok(res);
-        }
 
         // DELETE api/cart/5
         [HttpDelete("{id}")]
