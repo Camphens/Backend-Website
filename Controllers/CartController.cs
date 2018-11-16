@@ -50,6 +50,12 @@ namespace Backend_Website.Controllers
         }
 
         
+        [HttpGet("GetUser/{id}")]
+        public IActionResult GetProductDetails(int id)
+        {
+            var res = (from p in _context.Carts  where p.Id == id select p);
+            return Ok(res);
+        }
 
         // DELETE api/cart/5
         [HttpDelete("{id}")]
