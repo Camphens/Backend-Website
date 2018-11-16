@@ -39,10 +39,16 @@ namespace Backend_Website.Models
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
-{
-    relationship.DeleteBehavior = DeleteBehavior.Restrict;
-}
+        {
+            foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
+            {
+                relationship.DeleteBehavior = DeleteBehavior.Restrict;
+            }
+
+            ////////////////////////////////////////////////////////////////
+            //------------------- Join Table Relations -------------------//
+            ////////////////////////////////////////////////////////////////
+
             modelBuilder.Entity<Category_Type>()
             .HasKey(ct => new {ct.CategoryId, ct._TypeId});
             modelBuilder.Entity<Category_Type>()
@@ -97,6 +103,39 @@ namespace Backend_Website.Models
             .HasOne(cp => cp.Product)
             .WithMany(p => p.Carts)
             .HasForeignKey(cp => cp.CartId);
+
+
+            ////////////////////////////////////////////////////////////////
+            //------------------- Other Table Relations ------------------//
+            ////////////////////////////////////////////////////////////////
+
+            modelBuilder.Entity<Cart>()
+            .HasOne(s => s.User)
+            .WithOne(b => b.Cart)
+            .HasForeignKey<Cart>(b => b.UserId)
+            .IsRequired();
+
+            modelBuilder.Entity<Wishlist>()
+            .HasOne(s => s.User)
+            .WithOne(b => b.Wishlist)
+            .HasForeignKey<Wishlist>(b => b.UserId)
+            .IsRequired();
+
+            modelBuilder.Entity<Order>()
+            .HasOne(s => s.Address)
+            .WithMany(b => b.Orders)
+            .HasForeignKey(b => b.AddressId)
+            .IsRequired();
+            modelBuilder.Entity<Order>()
+            .HasOne(s => s.OrderStatus)
+            .WithMany(b => b.Orders)
+            .HasForeignKey(b => b.OrderStatusId)
+            .IsRequired();
+            modelBuilder.Entity<Order>()
+            .HasOne(s => s.User)
+            .WithMany(b => b.Orders)
+            .HasForeignKey(b => b.UserId);
+
         }
     }
 
@@ -123,7 +162,8 @@ namespace Backend_Website.Models
     {
         public int Id {get; set;}
         public int UserId {get; set;}
-        public double CartTotalPrice {get; set;}
+        public User User {get; set;}
+        public double? CartTotalPrice {get; set;}
         public List<CartProduct> Products {get; set;}
     }
  
@@ -133,6 +173,8 @@ namespace Backend_Website.Models
         public Cart Cart {get; set;}
         public int ProductId {get; set;}
         public Product Product {get; set;}
+        public int CartQuantity {get; set;}
+        public DateTime? CartDateAdded {get; set;}
     }
 
     public class Category
@@ -155,6 +197,7 @@ namespace Backend_Website.Models
     {
         public int Id {get; set;}
         public int BrandId {get; set;}
+        public Brand Brand {get; set;}
         public string CollectionName {get; set;}
         public List<Product> Products {get; set;}
     }
@@ -163,11 +206,14 @@ namespace Backend_Website.Models
     public class Order
     {
         public int Id {get; set;}
-        public int UserId {get; set;}
+        public int? UserId {get; set;}
+        public User User {get; set;}
         public int AddressId {get; set;}
+        public Address Address {get; set;}
         public int OrderStatusId {get; set;}
-        public double OrderTotalPrice {get; set;}
-        public DateTime OrderDate {get; set;}
+        public OrderStatus OrderStatus {get; set;}
+        public double? OrderTotalPrice {get; set;}
+        public DateTime? OrderDate {get; set;}
         public List<OrderProduct> Products {get; set;}
     }
 
@@ -199,10 +245,15 @@ namespace Backend_Website.Models
         public double ProductPrice {get; set;}
         public string ProductColor {get; set;}
         public int _TypeId {get; set;}
+        public _Type _Type {get; set;}
         public int CategoryId {get; set;}
+        public Category Category {get; set;}
         public int CollectionId {get; set;}
+        public Collection Collection {get; set;}
         public int BrandId {get; set;}
+        public Brand Brand {get; set;}
         public int StockId {get; set;}
+        public Stock Stock {get; set;}
         public List<ProductImage> ProductImages {get; set;}
         public List<OrderProduct> Orders {get; set;}
         public List<WishlistProduct> Wishlists {get; set;}
@@ -213,6 +264,7 @@ namespace Backend_Website.Models
     {
         public int Id {get; set;}
         public int ProductId {get; set;}
+        public Product Product {get; set;}
         public string ImageURL {get; set;}
     }
 
@@ -220,9 +272,10 @@ namespace Backend_Website.Models
     {
         public int Id {get; set;}
         public int ProductId {get; set;}
-        public double ProductNewPrice {get; set;}
-        public DateTime StartDate {get; set;}
-        public DateTime ExpiryDate {get; set;}
+        public Product Product {get; set;}
+        public double? ProductNewPrice {get; set;}
+        public DateTime? StartDate {get; set;}
+        public DateTime? ExpiryDate {get; set;}
     }
 
     public class Stock
@@ -247,11 +300,14 @@ namespace Backend_Website.Models
         public string UserPassword {get; set;}
         public string FirstName {get; set;}
         public string LastName {get; set;}
-        public DateTime BirthDate {get; set;}
+        public DateTime? BirthDate {get; set;}
         public string Gender {get; set;}
         public string EmailAddress {get; set;}
-        public int PhoneNumber {get; set;}
+        public int? PhoneNumber {get; set;}
+        public Cart Cart {get; set;}
+        public Wishlist Wishlist {get; set;}
         public List<UserAddress> Addresses {get; set;}
+        public List<Order> Orders {get; set;}
     }
 
     public class UserAddress
@@ -266,6 +322,7 @@ namespace Backend_Website.Models
     {
         public int Id {get; set;}
         public int UserId {get; set;}
+        public User User {get; set;}
         public List<WishlistProduct> Products {get; set;}
     }
 

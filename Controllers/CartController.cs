@@ -50,6 +50,12 @@ namespace Backend_Website.Controllers
             _context.SaveChanges();
         }
         
+        [HttpGet("GetUser/{id}")]
+        public IActionResult GetProductDetails(int id)
+        {
+            var res = (from p in _context.Carts  where p.Id == id select p);
+            return Ok(res);
+        }
 
         // PUT api/cart/5
         [HttpPut("{id}")]
