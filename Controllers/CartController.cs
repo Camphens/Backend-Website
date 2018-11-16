@@ -19,10 +19,12 @@ namespace Backend_Website.Controllers
         }
         // GET api/cart
 
-        [HttpGet("GetItemsInCart")]
-        public Items_in_Cart[] GetItemsInCart()
-        {
+        [HttpGet("GetItemsInCart/{id}")]
+        public Items_in_Cart[] GetItemsInCart(int id)
+        {   
+
             var products_in_cart = (from cart in _context.Carts
+                                    where cart.Id == id
                                    let cart_items =
                                    (from entry in _context.CartProducts
                                     from product in _context.Products
