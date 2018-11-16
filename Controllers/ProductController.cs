@@ -99,7 +99,13 @@ namespace Backend_Website.Controllers
             page_index = page_index-1;
             int skip = page_index * page_size;
             res = res.Skip(skip).Take(page_size).ToArray();
-            return Ok(res);
+            PaginationPage page = new PaginationPage {totalpages = totalpages, products = res};
+            return Ok(page);
+        }
+
+        public class PaginationPage{
+            public int totalpages {get;set;}
+            public Complete_Product[] products {get;set;}
         }
 
         // POST api/product
