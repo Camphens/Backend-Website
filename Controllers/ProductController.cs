@@ -83,7 +83,22 @@ namespace Backend_Website.Controllers
             //Get a list of the right products, ordered by id
             //page_index-1 so the first page is 1 and not 0
 
-            var res = _context.Products.GetPage<Product>(page_index-1, page_size, p => p.Id);
+            var res = (from p in _context.Products orderby p let images = 
+            (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+            let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
+            let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
+            let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
+            let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
+            let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
+            select new Complete_Product(){Product = p, Images = images, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock}).ToArray();
+
+
+            int totalitems = res.Count();
+            int totalpages = totalitems / page_size;
+            totalpages = totalpages+1;
+            page_index = page_index-1;
+            int skip = page_index * page_size;
+            res = res.Skip(skip).Take(page_size).ToArray();
             return Ok(res);
         }
 
