@@ -28,7 +28,9 @@ namespace Backend_Website.Controllers
                                     from product in _context.Products
                                     where entry.CartId == cart.Id && entry.ProductId == product.Id
                                     select product).ToArray()
-                                    let image = (from p in cart_items from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL)
+                                    let image = (from p in cart_items 
+                                    from i in _context.ProductImages 
+                                    where p.Id == i.ProductId select i.ImageURL)
                                     select new Items_in_Cart(){ Cart = cart, AllItems = cart_items, Image = image }
                                    ).ToArray();
 
