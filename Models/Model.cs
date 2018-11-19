@@ -125,8 +125,7 @@ namespace Backend_Website.Models
             modelBuilder.Entity<Order>()
             .HasOne(s => s.Address)
             .WithMany(b => b.Orders)
-            .HasForeignKey(b => b.AddressId)
-            .IsRequired();
+            .HasForeignKey(b => b.AddressId);
             modelBuilder.Entity<Order>()
             .HasOne(s => s.OrderStatus)
             .WithMany(b => b.Orders)
@@ -209,7 +208,7 @@ namespace Backend_Website.Models
         public int Id {get; set;}
         public int? UserId {get; set;}
         public User User {get; set;}
-        public int AddressId {get; set;}
+        public int? AddressId {get; set;}
         public Address Address {get; set;}
         public int OrderStatusId {get; set;}
         public OrderStatus OrderStatus {get; set;}

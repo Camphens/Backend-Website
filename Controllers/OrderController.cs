@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Backend_Website.Models;
+using Newtonsoft.Json;
 
 namespace Backend_Website.Controllers
 {
@@ -42,14 +43,40 @@ namespace Backend_Website.Controllers
         }
 
 
-        // POST api/cart
+        ////////////////////////////////////////////////////////////
+        ///                   Creating an Order                  ///
+        ////////////////////////////////////////////////////////////
         [HttpPost("MakeOrder")]
-        public void MakeOrder([FromBody] Order Order)
+        public void MakeOrder(dynamic Orderdetails)
         {
-
+            dynamic OrderdetailsJSON = JsonConvert.DeserializeObject(Orderdetails.ToString());
+            OrderStatus Status = new OrderStatus()
+            {
+                OrderDescription = "Pending"
+            };
+            _context.OrderStatus.Add(Status);
+            
+            Order Order = new Order()
+            {
+                UserId = OrderdetailsJSON.userID, 
+                AddressId = OrderdetailsJSON.AddressID, 
+                OrderStatusId = Status.Id
+            };
             _context.Orders.Add(Order);
+        
+
+            foreach (var item in OrderdetailsJSON.productIDs)
+            {
+                OrderProduct product = new OrderProduct()
+                {
+                    OrderId = Order.Id, 
+                    ProductId = item
+                };
+                _context.OrderProduct.Add(product);
+            }
             _context.SaveChanges();
         }
+
 
         // PUT api/cart/5
         [HttpPut("UpdateOrder/{id}")]
