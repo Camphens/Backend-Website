@@ -27,6 +27,7 @@ namespace Backend_Website.Controllers
             //     return BadRequest();
 
             User user = new User(){
+                Id              = _context.Users.Max(u => u.Id) + 1,
                 UserName        = UserDetailsJson.UserName,
                 UserPassword    = UserDetailsJson.UserPassword,
                 FirstName       = UserDetailsJson.FirstName,
@@ -38,11 +39,13 @@ namespace Backend_Website.Controllers
             await _context.Users.AddAsync(user);
             
             Cart usercart = new Cart(){
+                Id              = _context.Carts.Max(c => c.Id) + 1,
                 UserId          = user.Id, 
                 CartTotalPrice  = 0.00};
             _context.Carts.Add(usercart);
         
             Wishlist userwishlist = new Wishlist(){
+                Id              = _context.Wishlists.Max(w => w.Id) + 1,
                 UserId          = user.Id};
             _context.Wishlists.Add(userwishlist);
             await _context.SaveChangesAsync();
