@@ -13,100 +13,68 @@ namespace Backend_Website.Controllers
     public class OrderController : Controller
     {
         private readonly WebshopContext _context;
+        public OrderController(WebshopContext context){
+            _context = context;}
 
-        public OrderController(WebshopContext context)
-        {
-            _context = context;
-        }
-        // GET api/cart
+
 
         [HttpGet("GetAllOrders")]
-        public ActionResult GetAllOrders()
-        {
+        public ActionResult GetAllOrders(){
             var orders = (from items in _context.Orders
                           select items).ToList();
-            return Ok(orders);
+            return Ok(orders);}
 
-        }
 
-        // GET api/cart/5
         [HttpGet("GetSpecificOrder/{id}")]
-        public ActionResult GetSpecificOrder(int id)
-        {
+        public ActionResult GetSpecificOrder(int id){
             var specific_order = _context.Orders.FirstOrDefault(Order => Order.Id == id);
-            if (specific_order == null)
-            {
-                return NotFound();
-            }
+            if (specific_order == null){
+                return NotFound();}
             //else:
-            return new OkObjectResult(specific_order);
-        }
+            return new OkObjectResult(specific_order);}
 
 
-        ////////////////////////////////////////////////////////////
-        ///                   Creating an Order                  ///
-        ////////////////////////////////////////////////////////////
         [HttpPost("MakeOrder")]
-        public void MakeOrder(dynamic Orderdetails)
-        {
+        public void MakeOrder(dynamic Orderdetails){
             dynamic OrderdetailsJSON = JsonConvert.DeserializeObject(Orderdetails.ToString());
-            OrderStatus Status = new OrderStatus()
-            {
-                OrderDescription = "Pending"
-            };
+            OrderStatus Status = new OrderStatus(){
+                OrderDescription = "Pending"};
             _context.OrderStatus.Add(Status);
             
-            Order Order = new Order()
-            {
+            Order Order = new Order(){
                 UserId = OrderdetailsJSON.userID, 
                 AddressId = OrderdetailsJSON.AddressID, 
-                OrderStatusId = Status.Id
-            };
+                OrderStatusId = Status.Id};
             _context.Orders.Add(Order);
-        
 
-            foreach (var item in OrderdetailsJSON.productIDs)
-            {
-                OrderProduct product = new OrderProduct()
-                {
+            foreach (var item in OrderdetailsJSON.productIDs){
+                OrderProduct product = new OrderProduct(){
                     OrderId = Order.Id, 
-                    ProductId = item
-                };
-                _context.OrderProduct.Add(product);
-            }
+                    ProductId = item};
+                _context.OrderProduct.Add(product);}
             _context.SaveChanges();
         }
 
 
-        // PUT api/cart/5
         [HttpPut("UpdateOrder/{id}")]
-        public ActionResult UpdateOrder(int id, [FromBody] Order UpdatedOrder)
-        {
+        public ActionResult UpdateOrder(int id, [FromBody] Order UpdatedOrder){
             var Old_Orderr = _context.Orders.FirstOrDefault(Order_To_Be_Updated => Order_To_Be_Updated.Id == id);
-            if (Old_Orderr == null)
-            {
-                return NotFound();
-            }
-            else
-            {
+            if (Old_Orderr == null){
+                return NotFound();}
+            else {
                 Old_Orderr.Id = UpdatedOrder.Id;
                 Old_Orderr.OrderTotalPrice = UpdatedOrder.OrderTotalPrice;
 
                 _context.SaveChanges();
-                return Ok(Old_Orderr);
-            }
-
+                return Ok(Old_Orderr);}
         }
 
-        // DELETE api/cart/5
+
         [HttpDelete("{id}")]
-        public IActionResult DeleteOrder(int id)
-        {
+        public IActionResult DeleteOrder(int id){
             var order = _context.Orders.Find(id);
-            if (order == null)
-            {
-                return NotFound();
-            }
+            if (order == null){
+                return NotFound();}
             _context.Orders.Remove(order);
             _context.SaveChanges();
             return Ok(order);

@@ -13,15 +13,20 @@ using Microsoft.Extensions.Options;
 using Npgsql.EntityFrameworkCore;
 using Backend_Website.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Backend_Website.Auth;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Http;
 
 namespace Backend_Website
 {
     public class Startup
     {
-        // public Startup(IConfiguration configuration)
-        // {
-        //     Configuration = configuration;
-        // }
+        // This Key is basicaly your encription key that is überspecial and actualy has to be placed elsewhere.
+        private const string VerySecretKey = "NisHU792nHGUydtPlAQgZhMLmT8761GZs0GhqfdZ7D234NBB6gSER0vc2b0SaSaJShdf";
+        private readonly SymmetricSecurityKey _signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(VerySecretKey));
 
         public Startup(IHostingEnvironment env)
         {
@@ -39,6 +44,57 @@ namespace Backend_Website
         {
             services.AddDbContext<WebshopContext>(opt => opt.UseNpgsql(Configuration.GetConnectionString("WebsiteDatabase")));
             services.AddMvc();
+
+            services.AddSingleton<IJwtGenerator, JwtGenerator>();
+            services.TryAddTransient<IHttpContextAccessor, HttpContextAccessor>();
+
+            
+            // Gets initial options (Issuer and Audience) from appsetting.json
+            var jwtAppSettingsOptions = Configuration.GetSection(nameof(JwtIssuerOptions));
+
+            // Configuration of JwtIssuerOptions by adding them as service.
+            services.Configure<JwtIssuerOptions>(opt => 
+            {
+                opt.Issuer = jwtAppSettingsOptions[nameof(JwtIssuerOptions.Issuer)];
+                opt.Audience = jwtAppSettingsOptions[nameof(JwtIssuerOptions.Audience)];
+                opt.SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256);
+            });
+
+            // Validation parameters for the received tokens
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = jwtAppSettingsOptions[nameof(JwtIssuerOptions.Issuer)],
+
+                ValidateAudience = true,
+                ValidAudience = jwtAppSettingsOptions[nameof(JwtIssuerOptions.Audience)],
+
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = _signingKey,
+
+                RequireExpirationTime = true,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+
+            services.AddAuthentication(opt => 
+            {
+                opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(configureOptions =>
+                {
+                    configureOptions.ClaimsIssuer = jwtAppSettingsOptions[nameof(JwtIssuerOptions.Issuer)];
+                    configureOptions.TokenValidationParameters = tokenValidationParameters;
+                    configureOptions.SaveToken = true;
+                }
+            );
+
+            // api user claim policy
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("ApiUser", policy => policy.RequireClaim(Helpers.Constants.Strings.JwtClaimIdentifiers.Id));
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,6 +110,9 @@ namespace Backend_Website
             }
 
             app.UseHttpsRedirection();
+            app.UseAuthentication();
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
             app.UseMvc();
         }
     }
