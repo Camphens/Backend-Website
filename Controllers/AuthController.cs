@@ -35,29 +35,29 @@ namespace Backend_Website.Controllers
                 return BadRequest(ModelState);}
 
             // Checks if Username Password combination is correct.
-            var identity = await GetClaimsIdentity(credentials.UserName, credentials.Password);
+            var identity = await GetClaimsIdentity(credentials.EmailAddress, credentials.UserPassword);
             if (identity == null){
                 return BadRequest(Errors.AddErrorToModelState("login_failure", "Invalid username or password.", ModelState));}
 
             // Generates Token
-            var jwt = await Tokens.GenerateJwt(identity, _jwtGenerator, credentials.UserName, _jwtOptions, new JsonSerializerSettings { Formatting = Formatting.Indented });
+            var jwt = await Tokens.GenerateJwt(identity, _jwtGenerator, credentials.EmailAddress, _jwtOptions, new JsonSerializerSettings { Formatting = Formatting.Indented });
             return new OkObjectResult(jwt);
         }
 
-        private async Task<ClaimsIdentity> GetClaimsIdentity(string userName, string password)
+        private async Task<ClaimsIdentity> GetClaimsIdentity(string emailAddress, string password)
         {
             // Checks if one of the fields is null to begin with
-            if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(emailAddress) || string.IsNullOrEmpty(password))
                 return await Task.FromResult<ClaimsIdentity>(null);
 
             // Get the user to verifty
             var userToVerify = (from user in _context.Users
-                                where user.UserName == userName
+                                where user.EmailAddress == emailAddress
                                 where user.UserPassword == password
-                                select user.Id).ToArray();
+                                select Tuple.Create(user.Id, user.Role)).ToArray();
             
             if(userToVerify != null)
-            return await Task.FromResult(_jwtGenerator.GenerateClaimsIdentity(userName, (userToVerify[0]).ToString()));
+            return await Task.FromResult(_jwtGenerator.GenerateClaimsIdentity(emailAddress, (userToVerify[0].Item1).ToString(), userToVerify[0].Item2));
 
             // Credentials are invalid, or account doesn't exist
             return await Task.FromResult<ClaimsIdentity>(null);

@@ -10,10 +10,10 @@ namespace Backend_Website.Helpers
                 public const string Id = "id";
             }
 
-            public static class JwtClaims
-            {
-                public const string ApiAccess = "api_access";
-            }
+            // public static class JwtClaims
+            // {
+            //     public const string ApiAccess = "Admin";
+            // }
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Backend_Website.Models;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Backend_Website.Controllers
 {
@@ -15,7 +16,6 @@ namespace Backend_Website.Controllers
         private readonly WebshopContext _context;
         public OrderController(WebshopContext context){
             _context = context;}
-
 
 
         [HttpGet("GetAllOrders")]

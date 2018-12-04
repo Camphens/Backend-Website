@@ -12,6 +12,7 @@ namespace Backend_Website.Auth
     public class JwtGenerator : IJwtGenerator
     {
         private readonly JwtIssuerOptions _jwtOptions;
+        public const string Rol = "rol";
 
         public JwtGenerator(IOptions<JwtIssuerOptions> jwtOptions)
         {
@@ -19,14 +20,15 @@ namespace Backend_Website.Auth
             ThrowIfInvalidOptions(_jwtOptions);
         }
 
-        public async Task<string> GenerateEncodedToken(string userName, ClaimsIdentity identity)
+        public async Task<string> GenerateEncodedToken(string emailAddress, ClaimsIdentity identity)
         {
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userName),
+                new Claim(JwtRegisteredClaimNames.Sub, emailAddress),
                 new Claim(JwtRegisteredClaimNames.Jti, await _jwtOptions.JtiGenerator()),
                 new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(_jwtOptions.IssuedAt).ToString(), ClaimValueTypes.Integer64),
-                identity.FindFirst(Helpers.Constants.Strings.JwtClaimIdentifiers.Id)
+                identity.FindFirst(Helpers.Constants.Strings.JwtClaimIdentifiers.Id),
+                identity.FindFirst("rol")
             };
 
             // Create the JWT security token and encode it.
@@ -44,10 +46,11 @@ namespace Backend_Website.Auth
         }
 
         /// Generates a Claim Identity for a JWT
-        public ClaimsIdentity GenerateClaimsIdentity(string userName, string id)
+        public ClaimsIdentity GenerateClaimsIdentity(string emailAddress, string id, string rol)
         {
-            return new ClaimsIdentity(new GenericIdentity(userName, "Token"), new[]{
-                new Claim(Helpers.Constants.Strings.JwtClaimIdentifiers.Id, id)});
+            return new ClaimsIdentity(new GenericIdentity(emailAddress, "Token"), new[]{
+                new Claim(Helpers.Constants.Strings.JwtClaimIdentifiers.Id, id),
+                new Claim(Rol, rol)});
         }
 
         /// Date converted to seconds since Unix epoch (Jan 1, 1970, midnight UTC).

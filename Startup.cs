@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Backend_Website.Auth;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace Backend_Website
 {
@@ -43,7 +44,6 @@ namespace Backend_Website
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<WebshopContext>(opt => opt.UseNpgsql(Configuration.GetConnectionString("WebsiteDatabase")));
-            services.AddMvc();
 
             services.AddSingleton<IJwtGenerator, JwtGenerator>();
             services.TryAddTransient<IHttpContextAccessor, HttpContextAccessor>();
@@ -93,8 +93,10 @@ namespace Backend_Website
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("ApiUser", policy => policy.RequireClaim(Helpers.Constants.Strings.JwtClaimIdentifiers.Id));
+                options.AddPolicy("_IsAdmin", policy => policy.RequireClaim("rol", "Admin"));
             });
 
+            services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -109,7 +111,7 @@ namespace Backend_Website
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseDefaultFiles();
             app.UseStaticFiles();
