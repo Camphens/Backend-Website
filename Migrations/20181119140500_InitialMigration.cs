@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace BackendWebsite.Migrations
 {
-    public partial class NullableValuesTest : Migration
+    public partial class InitialMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -180,7 +180,7 @@ namespace BackendWebsite.Migrations
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     UserId = table.Column<int>(nullable: true),
-                    AddressId = table.Column<int>(nullable: false),
+                    AddressId = table.Column<int>(nullable: true),
                     OrderStatusId = table.Column<int>(nullable: false),
                     OrderTotalPrice = table.Column<double>(nullable: true),
                     OrderDate = table.Column<DateTime>(nullable: true)
