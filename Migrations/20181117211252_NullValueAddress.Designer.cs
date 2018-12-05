@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BackendWebsite.Migrations
 {
     [DbContext(typeof(WebshopContext))]
-    [Migration("20181119140500_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20181117211252_NullValueAddress")]
+    partial class NullValueAddress
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
