@@ -29,6 +29,16 @@ namespace Backend_Website.Controllers
 
         }
 
+        [HttpGet("GetOrdersOfTheUser")]
+        public ActionResult GetAllOrders(int id)
+        {
+            var orders = (from items in _context.Orders
+                          where items.UserId == id
+                          select items).ToList();
+            return Ok(orders);
+
+        }
+
         // GET api/cart/5
         [HttpGet("GetSpecificOrder/{id}")]
         public ActionResult GetSpecificOrder(int id)
