@@ -326,7 +326,7 @@ namespace Backend_Website.Controllers
         // }
 
         // IOrderedQueryable x = null;
-       Object[] x= new Object[]{};
+        //Object[] x= new Object[]{};
         //IQueryable<int> x = null;
         //Product[] x = new Product[]{};
                 List<object> List = new List<object>{};
@@ -339,7 +339,7 @@ namespace Backend_Website.Controllers
             Values.Add(item.Value);
             Keys.Add(item.Key);
             Console.WriteLine($"HERE {item.Key} & {item.Value}");
-           x = (from p in _context.Products.Where(f => f.GetProperty(item.Key) == item.Value) select p).ToArray();
+           var x = (from p in _context.Products.Where(f => f.GetProperty(item.Key) == item.Value) select p);
             List.Add(x);
             //return Ok(x);
         }
@@ -372,7 +372,7 @@ namespace Backend_Website.Controllers
          //var filter = filters.Keys;
         //   Console.WriteLine($"HERE {filters.Keys}");
        // Console.WriteLine($"HERE {x}");
-            return Ok(x);
+            return Ok(List);
 
             
         }
