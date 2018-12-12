@@ -265,7 +265,7 @@ namespace Backend_Website.Controllers
             int totalpages = totalitems / page_size;
             //totalpages+1 because the first page is 1 and not 0
             totalpages = totalpages + 1;
-            string Error = "Error";
+            string Error = "No product that fullfill these filters";
             if (res.Count() < 1 | page_index < 1) return Ok(Error);
             //page_index-1 so the first page is 1 and not 0
             page_index = page_index - 1;
