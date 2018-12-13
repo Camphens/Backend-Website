@@ -18,7 +18,7 @@ namespace Backend_Website.Controllers
     [Authorize(Policy = "ApiUser")]
     [Route("api/[controller]")]
     [ApiController]
-    public class CartController : Controller 
+    public class CartController : Controller
     {
         private readonly WebshopContext _context;
         private readonly ClaimsPrincipal _caller;
@@ -57,38 +57,6 @@ namespace Backend_Website.Controllers
             public IEnumerable<string> Image { get; set; }
         }
 
-        [HttpPut("ChangeQuantity")]
-        public ActionResult ProductStock_GoUp(int id)
-        {
-            var query = (from products in _context.Products
-                         where products.Id == id
-                         select products.Stock).ToArray();
-            query[0].ProductQuantity++;
-
-             _context.SaveChanges();
-            return Ok(query);
-        }
-
-        [HttpPut("ChangeQuantity")]
-        public ActionResult ProductStock_GoDown(int id)
-        {
-            var query = (from products in _context.Products
-                         where products.Id == id
-                         select products.Stock).ToArray();
-            if (query[0].ProductQuantity == 0)
-            {
-                query[0].ProductQuantity = query[0].ProductQuantity;
-            }
-            else
-            {
-                query[0].ProductQuantity--;
-            }
-            
-
-             _context.SaveChanges();
-            return Ok(query);
-        }
-
         [HttpPost("AddItemToCart/{Cart_given_id}/{Given_ProductId}")]
         public void AddItemToCart(int Cart_given_id, int Given_ProductId)
         {
@@ -114,14 +82,13 @@ namespace Backend_Website.Controllers
             {
                 search_product.CartQuantity++;
             }
-           ProductStock_GoDown(Given_ProductId);
             _context.SaveChanges();
         }
 
 
 
         [HttpDelete("DeleteProductFromCart/{Given_CartId}/{Given_ProductId}")]
-        public ActionResult DeleteProductFromCart(int Given_CartId, int Given_ProductId)
+        public ActionResult Delete(int Given_CartId, int Given_ProductId)
         {
             var product_in_cart = (from item in _context.CartProducts
                                    where item.ProductId == Given_ProductId && item.CartId == Given_CartId
@@ -130,7 +97,6 @@ namespace Backend_Website.Controllers
             {
                 return NotFound();
             }
-            ProductStock_GoUp(Given_ProductId);
             _context.CartProducts.Remove(product_in_cart[0]);
             _context.SaveChanges();
             return Ok(product_in_cart);
