@@ -9,7 +9,7 @@ namespace Backend_Website.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CartController : Controller
+    public class CartController : Controller 
     {
         private readonly WebshopContext _context;
 
