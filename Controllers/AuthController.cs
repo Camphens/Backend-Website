@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
-using Backend_Website.ViewModels.Validations;
 
 namespace Backend_Website.Controllers
 {
@@ -32,18 +31,8 @@ namespace Backend_Website.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Post([FromBody]CredentialsViewModel credentials)
         {
-            CredentialsViewModelValidator validator             = new CredentialsViewModelValidator();
-            FluentValidation.Results.ValidationResult results   = validator.Validate(credentials);
-
-            if (!results.IsValid){
-                foreach(var failure in results.Errors){
-                    Errors.AddErrorToModelState(failure.PropertyName, failure.ErrorMessage, ModelState);
-                }
-            }
-
             if (!ModelState.IsValid){
-                return BadRequest(ModelState);
-            }          
+                return BadRequest(ModelState);}
 
             // Checks if Username Password combination is correct.
             var identity = await GetClaimsIdentity(credentials.EmailAddress, credentials.UserPassword);
@@ -63,12 +52,12 @@ namespace Backend_Website.Controllers
 
             // Get the user to verifty
             var userToVerify = (from user in _context.Users
-                                where user.EmailAddress == emailAddress && user.UserPassword == password
+                                where user.EmailAddress == emailAddress
+                                where user.UserPassword == password
                                 select Tuple.Create(user.Id, user.Role)).ToArray();
             
-            
-            if(userToVerify.Length!= 0)
-            return await Task.FromResult(_jwtGenerator.GenerateClaimsIdentity(emailAddress, userToVerify[0].Item1.ToString(), userToVerify[0].Item2.ToString()));
+            if(userToVerify != null)
+            return await Task.FromResult(_jwtGenerator.GenerateClaimsIdentity(emailAddress, (userToVerify[0].Item1).ToString(), userToVerify[0].Item2));
 
             // Credentials are invalid, or account doesn't exist
             return await Task.FromResult<ClaimsIdentity>(null);

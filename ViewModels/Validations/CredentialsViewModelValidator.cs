@@ -7,9 +7,9 @@ namespace Backend_Website.ViewModels.Validations
     {
         public CredentialsViewModelValidator()
         {
-            RuleFor(vm => vm.EmailAddress).NotEmpty().WithMessage("Email Address kan niet leeg zijn");
-            RuleFor(vm => vm.UserPassword).NotEmpty().WithMessage("Wachtwoord kan niet leeg zijn");
-            RuleFor(vm => vm.UserPassword).Length(3, 22).WithMessage("Wachtwoord message");
+            RuleFor(vm => vm.EmailAddress).NotEmpty().WithMessage("Email Address cannot be empty");
+            RuleFor(vm => vm.UserPassword).NotEmpty().WithMessage("Password cannot be empty");
+            RuleFor(vm => vm.UserPassword).Length(3, 22).WithMessage("Password must be between 6 and 12 characters");
         }
     }
 }

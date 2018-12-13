@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace Backend_Website.Models
 {
@@ -490,17 +489,6 @@ namespace Backend_Website.Models
         public Wishlist Wishlist {get; set;}
         public List<UserAddress> Addresses {get; set;}
         public List<Order> Orders {get; set;}
-
-        public object this[string propertyName] {
-        get{
-           Type myType = typeof(User);                   
-           PropertyInfo myPropInfo = myType.GetProperty(propertyName);
-           return myPropInfo.GetValue(this, null);}
-        set{
-           Type myType = typeof(User);                   
-           PropertyInfo myPropInfo = myType.GetProperty(propertyName);
-           myPropInfo.SetValue(this, value, null);}
-        }
     }
 
     public class UserAddress
