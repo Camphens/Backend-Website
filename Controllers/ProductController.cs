@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Backend_Website.Models;
 using Newtonsoft.Json;
+using System.Net.Http;
+using System.Text;
+using System.Linq.Expressions;
 
 namespace Backend_Website.Controllers
 {
@@ -15,40 +17,51 @@ namespace Backend_Website.Controllers
     {
         private readonly WebshopContext _context;
 
-        public ProductController (WebshopContext context)
+        public ProductController(WebshopContext context)
         {
             _context = context;
         }
-        
+
         public class Complete_Product
         {
-            public Product Product{get;set;}
-            public string[] Images {get;set;}
-            public IQueryable<string> Type{get;set;}
-            public IQueryable<string> Category{get;set;}
-            public IQueryable<string> Collection{get;set;}
-            public IQueryable<string> Brand {get;set;}
-            public IQueryable<int> Stock{get;set;}
-        }   
-
-        public class PaginationPage{
-            public int totalpages {get;set;}
-            public int totalitems {get;set;}
-            public Complete_Product[] products {get;set;}
+            public Product Product { get; set; }
+            public string[] Images { get; set; }
+            public IQueryable<string> Type { get; set; }
+            public IQueryable<string> Category { get; set; }
+            public IQueryable<string> Collection { get; set; }
+            public IQueryable<string> Brand { get; set; }
+            public IQueryable<int> Stock { get; set; }
         }
 
-        public class SearchProduct{
-            public int totalitems{get;set;}
-            public IOrderedQueryable products {get;set;}
+        public class PaginationPage
+        {
+            public int totalpages { get; set; }
+            public int totalitems { get; set; }
+            public Complete_Product[] products { get; set; }
         }
+
+        public class SearchProduct
+        {
+            public int totalitems { get; set; }
+            public IOrderedQueryable products { get; set; }
+        }
+
+        // public class FilterV
+        // {
+        //     public string filter1 {get;set;}
+        //     public string filter2 {get;set;}
+        //     public string filter3 {get;set;}
+        //     public string filter4 {get;set;}
+        //     public string filter5 {get;set;}
+        // }
 
         public class Filter
         {
-            public string filter1 {get;set;}
-            public string filter2 {get;set;}
-            public string filter3 {get;set;}
-            public string filter4 {get;set;}
-            public string filter5 {get;set;}
+            public int kind { get; set; }
+            public string att { get; set; }
+            public object value { get; set; }
+            public Filter a1 { get; set; }
+            public Filter a2 { get; set; }
         }
 
         // GET api/product
@@ -56,32 +69,36 @@ namespace Backend_Website.Controllers
         public IActionResult GetAllProducts()
         {
             //Get a list of all products from the table Products and order them by Id
-            var res = (from p in _context.Products orderby p let images = 
-            (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
-            let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
-            let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
-            let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
-            let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
-            let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
-            select new Complete_Product(){Product = p, Images = images, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock}).ToArray();
+            var res = (from p in _context.Products
+                       orderby p
+                       let images =
+(from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+                       let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
+                       let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
+                       let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
+                       let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
+                       let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
+                       select new Complete_Product() { Product = p, Images = images, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock }).ToArray();
             return Ok(res);
         }
 
-        
+
 
         // GET api/product/details/5
         [HttpGet("details/{id}")]
         public IActionResult GetProductDetails(int id)
         {
             //Get a list of all products from the table products with the given id
-            var res = (from p in _context.Products  where p.Id == id let images = 
-            (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
-            let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
-            let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
-            let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
-            let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
-            let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
-            select new Complete_Product(){Product = p, Images = images, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock}).ToArray();
+            var res = (from p in _context.Products
+                       where p.Id == id
+                       let images =
+(from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+                       let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
+                       let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
+                       let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
+                       let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
+                       let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
+                       select new Complete_Product() { Product = p, Images = images, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock }).ToArray();
             return Ok(res);
         }
 
@@ -101,29 +118,31 @@ namespace Backend_Website.Controllers
         public IActionResult GetProductsPerPage(int page_index, int page_size)
         {
             //Get a list of all products with all related info from other tables, ordered by id
-            var res = (from p in _context.Products orderby p let images = 
-            (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
-            let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
-            let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
-            let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
-            let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
-            let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
-            select new Complete_Product(){Product = p, Images = images, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock}).ToArray();
+            var res = (from p in _context.Products
+                       orderby p
+                       let images =
+(from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+                       let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
+                       let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
+                       let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
+                       let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
+                       let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
+                       select new Complete_Product() { Product = p, Images = images, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock }).ToArray();
 
-            
+
             int totalitems = res.Count();
             int totalpages = totalitems / page_size;
             //totalpages+1 because the first page is 1 and not 0
-            totalpages = totalpages+1;
+            totalpages = totalpages + 1;
             string Error = "Error";
             if (res.Count() < 1 | page_index < 1) return Ok(Error);
             //page_index-1 so the first page is 1 and not 0
-            page_index = page_index-1;
+            page_index = page_index - 1;
             int skip = page_index * page_size;
             res = res.Skip(skip).Take(page_size).ToArray();
-            PaginationPage page = new PaginationPage {totalpages = totalpages, totalitems = totalitems, products = res};
+            PaginationPage page = new PaginationPage { totalpages = totalpages, totalitems = totalitems, products = res };
             return Ok(page);
-                    }
+        }
 
         // // POST api/product
         // //verplicht meegeven: _typeid, categoryid, collectionid, brandid, stockid
@@ -141,19 +160,19 @@ namespace Backend_Website.Controllers
         {
             dynamic CategorydetailsJSON = JsonConvert.DeserializeObject(Categorydetails.ToString());
             Console.WriteLine(CategorydetailsJSON);
-            
+
             Category Category = new Category()
             {
                 CategoryName = CategorydetailsJSON.CategoryName,
                 Id = CategorydetailsJSON.CategoryId
             };
             _context.Categories.Add(Category);
-            
+
             _Type Type = new _Type()
             {
                 _TypeName = CategorydetailsJSON.TypeName,
                 Id = CategorydetailsJSON.TypeId
-                
+
             };
             _context.Types.Add(Type);
 
@@ -166,6 +185,96 @@ namespace Backend_Website.Controllers
             _context.SaveChanges();
         }
 
+        [HttpGet("filter/{page_index}/{page_size}")]
+        public IActionResult GetFilter(
+            int page_index,
+            int page_size,
+            [FromQuery(Name = "BrandId")] int[] BrandId,
+            [FromQuery(Name = "ProductColor")] string[] ProductColor,
+            [FromQuery(Name = "_TypeId")] int[] _TypeId,
+            [FromQuery(Name = "CollectionId")] int[] CollectionId,
+            [FromQuery(Name = "CategoryId")] int[] CategoryId
+            )
+        {
+            IQueryable<Complete_Product> res = null;
+            var result = _context.Products.Select(m => m);
+            if (BrandId.Length != 0)
+            {
+                result = result.Where(m => BrandId.Contains(m.BrandId));
+                res = from p in result
+                      let image = (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+                      let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
+                      let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
+                      let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
+                      let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
+                      let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
+                      select new Complete_Product() { Product = p, Images = image, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock };
+
+
+            }
+            if (ProductColor.Length != 0)
+            {
+                result = result.Where(m => ProductColor.Contains(m.ProductColor));
+                res = from p in result
+                      let image = (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+                      let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
+                      let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
+                      let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
+                      let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
+                      let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
+                      select new Complete_Product() { Product = p, Images = image, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock };
+            }
+            if (_TypeId.Length != 0)
+            {
+                result = result.Where(m => _TypeId.Contains(m._TypeId));
+                res = from p in result
+                      let image = (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+                      let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
+                      let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
+                      let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
+                      let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
+                      let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
+                      select new Complete_Product() { Product = p, Images = image, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock };
+            }
+             if (CategoryId.Length != 0)
+            {
+                result = result.Where(m => CategoryId.Contains(m.CategoryId));
+                res = from p in result
+                      let image = (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+                      let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
+                      let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
+                      let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
+                      let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
+                      let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
+                      select new Complete_Product() { Product = p, Images = image, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock };
+            }
+            if (CollectionId.Length != 0)
+            {
+                 result = result.Where(m => CollectionId.Contains(m.CollectionId));
+                res = from p in result
+                      let image = (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+                      let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
+                      let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
+                      let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
+                      let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
+                      let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
+                      select new Complete_Product() { Product = p, Images = image, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock };
+            }
+                        
+            int totalitems = res.Count();
+            int totalpages = totalitems / page_size;
+            //totalpages+1 because the first page is 1 and not 0
+            totalpages = totalpages + 1;
+            string Error = "No product that fullfill these filters";
+            if (res.Count() < 1 | page_index < 1) return Ok(Error);
+            //page_index-1 so the first page is 1 and not 0
+            page_index = page_index - 1;
+            int skip = page_index * page_size;
+            res = res.Skip(skip).Take(page_size);
+            PaginationPage page = new PaginationPage { totalpages = totalpages, totalitems = totalitems, products = res.ToArray()};
+            return Ok(page);
+            }
+
         // PUT api/product/5
         [HttpPut("{id}")]
         //Gets input from the body that is type Product (in Json)
@@ -175,18 +284,18 @@ namespace Backend_Website.Controllers
             Product p = _context.Products.Find(id);
             //Check if there is any input(value) for the attributes
             //If there is input, assign the new value to the attribute
-            if(product.ProductNumber != null){p.ProductNumber = product.ProductNumber;}
-            if(product.ProductEAN != null){p.ProductEAN = product.ProductEAN;}
-            if(product.ProductInfo != null){p.ProductInfo = product.ProductInfo;}
-            if(product.ProductDescription != null){p.ProductDescription = product.ProductDescription;}
-            if(product.ProductSpecification != null){p.ProductSpecification = product.ProductSpecification;}
-            if(product.ProductPrice != 0){p.ProductPrice = product.ProductPrice;}
-            if(product.ProductColor != null){p.ProductColor = product.ProductColor;}
-            if(product._TypeId!= 0){p._TypeId = product._TypeId;}
-            if(product.CategoryId != 0){p.CategoryId = product.CategoryId;}
-            if(product.CollectionId != 0){p.CollectionId = product.CollectionId;}
-            if(product.BrandId != 0){p.BrandId = product.BrandId;}
-            if(product.StockId != 0){p.StockId = product.StockId;}
+            if (product.ProductNumber != null) { p.ProductNumber = product.ProductNumber; }
+            if (product.ProductEAN != null) { p.ProductEAN = product.ProductEAN; }
+            if (product.ProductInfo != null) { p.ProductInfo = product.ProductInfo; }
+            if (product.ProductDescription != null) { p.ProductDescription = product.ProductDescription; }
+            if (product.ProductSpecification != null) { p.ProductSpecification = product.ProductSpecification; }
+            if (product.ProductPrice != 0) { p.ProductPrice = product.ProductPrice; }
+            if (product.ProductColor != null) { p.ProductColor = product.ProductColor; }
+            if (product._TypeId != 0) { p._TypeId = product._TypeId; }
+            if (product.CategoryId != 0) { p.CategoryId = product.CategoryId; }
+            if (product.CollectionId != 0) { p.CollectionId = product.CollectionId; }
+            if (product.BrandId != 0) { p.BrandId = product.BrandId; }
+            if (product.StockId != 0) { p.StockId = product.StockId; }
             //Update the changes to the table and save
             _context.Update(p);
             _context.SaveChanges();
@@ -206,61 +315,31 @@ namespace Backend_Website.Controllers
         [HttpGet("search/{page_index}/{page_size}/{searchstring}")]
         public IActionResult Search(int page_index, int page_size, string searchstring)
         {
-            var res = (from p in _context.Products where p.ProductName.Contains(searchstring) | p.ProductNumber.Contains(searchstring) | p.Brand.BrandName.Contains(searchstring) orderby p.Id let images = 
-            (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
-            let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
-            let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
-            let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
-            let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
-            let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
-            select new Complete_Product(){Product = p, Images = images, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock}).ToArray();
-
-             int totalitems = res.Count();
-            int totalpages = totalitems / page_size;
-            //totalpages+1 because the first page is 1 and not 0
-            totalpages = totalpages+1;
-            string Error = "Error";
-            if (res.Count() < 1 | page_index < 1) return Ok(Error);
-            //page_index-1 so the first page is 1 and not 0
-            page_index = page_index-1;
-            int skip = page_index * page_size;
-            res = res.Skip(skip).Take(page_size).ToArray();
-            PaginationPage page = new PaginationPage {totalpages = totalpages, totalitems = totalitems, products = res};
-            return Ok(page);
-        }
-        
-
-        [HttpGet("filter/{page_index}/{page_size}")]
-        public IActionResult Filtering(int page_index, int page_size, dynamic filter)
-        {
-            dynamic FilterString = JsonConvert.DeserializeObject(filter.ToString());
-            
-            Filter filterclass = new Filter{filter1 = FilterString.filter1, filter2 = FilterString.filter2, filter3 = FilterString.filter3, filter4 = FilterString.filter4, filter5 = FilterString.filter5};
-            var filter_brandname = (from b in _context.Brands where b.BrandName == filterclass.filter1 select b);
-            var filter_collectiename = (from col in _context.Collections where col.CollectionName == filterclass.filter2 select col);
-            var filter_type = (from type in _context.Types where type._TypeName == filterclass.filter3 select type);
-            var filter_category = (from cat in _context.Categories where cat.CategoryName == filterclass.filter4 select cat); 
-            var res = (from p in _context.Products from bn in filter_brandname from cn in filter_collectiename from tn in filter_type from catn in filter_category where (p._TypeId == tn.Id) && (p.CategoryId == catn.Id) && (p.BrandId == bn.Id) && (p.CollectionId == cn.Id) && (p.ProductColor == filterclass.filter5) orderby p.Id let images = 
-            (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
-            let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
-            let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
-            let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
-            let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
-            let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
-            select new Complete_Product(){Product = p, Images = images, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock}).ToArray();
+            var res = (from p in _context.Products
+                       where p.ProductName.Contains(searchstring) | p.ProductNumber.Contains(searchstring) | p.Brand.BrandName.Contains(searchstring)
+                       orderby p.Id
+                       let images =
+(from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+                       let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
+                       let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
+                       let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
+                       let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
+                       let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
+                       select new Complete_Product() { Product = p, Images = images, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock }).ToArray();
 
             int totalitems = res.Count();
             int totalpages = totalitems / page_size;
             //totalpages+1 because the first page is 1 and not 0
-            totalpages = totalpages+1;
+            totalpages = totalpages + 1;
             string Error = "Error";
             if (res.Count() < 1 | page_index < 1) return Ok(Error);
             //page_index-1 so the first page is 1 and not 0
-            page_index = page_index-1;
+            page_index = page_index - 1;
             int skip = page_index * page_size;
             res = res.Skip(skip).Take(page_size).ToArray();
-            PaginationPage page = new PaginationPage {totalpages = totalpages, totalitems = totalitems, products = res};
+            PaginationPage page = new PaginationPage { totalpages = totalpages, totalitems = totalitems, products = res };
             return Ok(page);
-        }
+        }   
     }
-} 
+
+}

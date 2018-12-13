@@ -428,7 +428,7 @@ namespace Backend_Website.Models
         public _Type _Type {get; set;}
         public int CategoryId {get; set;}
         public Category Category {get; set;}
-        public int? CollectionId {get; set;}
+        public int CollectionId {get; set;}
         public Collection Collection {get; set;}
         public int BrandId {get; set;}
         public Brand Brand {get; set;}
