@@ -343,7 +343,7 @@ namespace Backend_Website.Models
         public int Id {get; set;}
         public int UserId {get; set;}
         public User User {get; set;}
-        public double CartTotalPrice {get; set;}
+        public double? CartTotalPrice {get; set;}
         public List<CartProduct> Products {get; set;}
     }
  
