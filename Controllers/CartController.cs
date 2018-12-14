@@ -135,7 +135,7 @@ namespace Backend_Website.Controllers
             return Ok(product_in_cart);
         }
 
-        [HttpPost("CalculatePrice/{given_cartid}")]
+         [HttpPost("CalculatePrice/{given_cartid}")]
         public void TotalPrice(int given_cartid)
         {
             double Sum_of_cartproducts = (from cartproducts in _context.CartProducts
@@ -146,105 +146,7 @@ namespace Backend_Website.Controllers
 
             var search_cart = _context.Carts.Find(given_cartid);
             search_cart.CartTotalPrice = price;
-        // [HttpPost("TotalPrice/{given_cartid}")]
-        // public void TotalPrice(int given_cartid)
-        // {
-        //     double? Sum_of_cartproducts = (from cartproducts in _context.CartProducts
-        //                                    where cartproducts.CartId == given_cartid
-        //                                    select (int?)cartproducts.CartQuantity *
-        //                                    cartproducts.Product.ProductPrice).Sum();
-        //     double price;
-
-        //     var search_cart = _context.Carts.Find(given_cartid);
-        //     search_cart.CartTotalPrice = price;
-        //     _context.SaveChanges();
-        // }
-
-        /////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////
-
-
-        [HttpGet]
-        public ActionResult GetCartItems()
-        {
-            var userId      = _caller.Claims.Single(c => c.Type == "id");
-
-            var cartInfo    =   (from cart in _context.Carts
-                                where cart.UserId   == int.Parse(userId.Value)
-                                let cart_items      =   from entry in _context.CartProducts
-                                                        where cart.Id == entry.CartId
-                                                        select new {product = new {id       = entry.Product.Id,
-                                                                    productNumber           = entry.Product.ProductNumber,
-                                                                    productName             = entry.Product.ProductName,
-                                                                    productEAN              = entry.Product.ProductEAN,
-                                                                    productInfo             = entry.Product.ProductInfo,
-                                                                    productDescription      = entry.Product.ProductDescription,
-                                                                    productSpecification    = entry.Product.ProductSpecification,
-                                                                    ProductPrice            = entry.Product.ProductPrice,
-                                                                    productColor            = entry.Product.ProductColor,
-                                                                    Images                  = entry.Product.ProductImages.OrderBy(i => i.ImageURL).FirstOrDefault().ImageURL,
-                                                                    Type                    = entry.Product._Type._TypeName,
-                                                                    Category                = entry.Product.Category.CategoryName,
-                                                                    Collection              = entry.Product.Collection.CollectionName,
-                                                                    Brand                   = entry.Product.Brand.BrandName,
-                                                                    Stock                   = entry.Product.Stock.ProductQuantity,
-                                                                    itemsInCart             = entry.CartQuantity}}
-                                let cartTotal       =   (from item in _context.CartProducts
-                                                        where cart.Id == item.CartId 
-                                                        select (item.Product.ProductPrice * item.CartQuantity)).Sum()
-                                                        //from item in cart_items
-                                                        //select (item.ProductPrice * item.itemsInCart)).Sum()
-                                select new {Products = cart_items, TotalPrice = cartTotal}).ToArray();
-
-            return Ok(cartInfo[0]);
-            
-        }
-
-        [HttpPut]
-        public ActionResult EditCartItems([FromBody] CartViewModel _cartItem)
-        {
-            CartViewModelValidator validator    = new CartViewModelValidator();
-            ValidationResult results            = validator.Validate(_cartItem);
-
-            if (!results.IsValid){
-                foreach(var failure in results.Errors){
-                    Errors.AddErrorToModelState(failure.PropertyName, failure.ErrorMessage, ModelState);
-                }
-            }
-
-            if (!ModelState.IsValid || _cartItem.CartQuantity == 0){
-                return BadRequest(ModelState);
-            }          
-
-            var userId      = _caller.Claims.Single(c => c.Type == "id");
-            var cartItem    = _context.CartProducts
-                                .Where(c => c.Cart.UserId == int.Parse(userId.Value) && c.ProductId == _cartItem.ProductId)
-                                .Select(a => a).ToArray();
-            
-            if (cartItem.Length == 0)
-            {
-                return NotFound();
-            }
-
-            var oldQuantity = cartItem[0].CartQuantity;
-            var stockid     = (_context.Stock.Where(s => s.Product.Id == _cartItem.ProductId).Select(p => p.Id)).ToArray().First();
-            var stock       = _context.Stock.Find(stockid);
-    
-            if(stock.ProductQuantity + oldQuantity < _cartItem.CartQuantity){
-                cartItem[0].CartQuantity = stock.ProductQuantity + oldQuantity ;
-                stock.ProductQuantity = 0;
-            }
-
-            else{
-                cartItem[0].CartQuantity = _cartItem.CartQuantity;
-                stock.ProductQuantity = stock.ProductQuantity + oldQuantity - _cartItem.CartQuantity;
-            }
-
-            _context.Update(stock);
-            _context.CartProducts.Update(cartItem[0]);
             _context.SaveChanges();
-            
-            return Ok();
         }
 
         [HttpGet("RetrievePrice/{given_cartid}")]
@@ -256,57 +158,165 @@ namespace Backend_Website.Controllers
             return Ok(query);
 
         }
-        [HttpPost]
-        public ActionResult PostCartItems([FromBody] CartViewModel _cartItem)
-        {
-            CartViewModelValidator validator    = new CartViewModelValidator();
-            ValidationResult results            = validator.Validate(_cartItem);
 
-            if (!results.IsValid){
-                foreach(var failure in results.Errors){
+
+        /////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////
+
+
+        [HttpGet]
+        public ActionResult GetCartItems()
+        {
+            var userId = _caller.Claims.Single(c => c.Type == "id");
+
+            var cartInfo = (from cart in _context.Carts
+                            where cart.UserId == int.Parse(userId.Value)
+                            let cart_items = from entry in _context.CartProducts
+                                             where cart.Id == entry.CartId
+                                             select new
+                                             {
+                                                 product = new
+                                                 {
+                                                     id = entry.Product.Id,
+                                                     productNumber = entry.Product.ProductNumber,
+                                                     productName = entry.Product.ProductName,
+                                                     productEAN = entry.Product.ProductEAN,
+                                                     productInfo = entry.Product.ProductInfo,
+                                                     productDescription = entry.Product.ProductDescription,
+                                                     productSpecification = entry.Product.ProductSpecification,
+                                                     ProductPrice = entry.Product.ProductPrice,
+                                                     productColor = entry.Product.ProductColor,
+                                                     Images = entry.Product.ProductImages.OrderBy(i => i.ImageURL).FirstOrDefault().ImageURL,
+                                                     Type = entry.Product._Type._TypeName,
+                                                     Category = entry.Product.Category.CategoryName,
+                                                     Collection = entry.Product.Collection.CollectionName,
+                                                     Brand = entry.Product.Brand.BrandName,
+                                                     Stock = entry.Product.Stock.ProductQuantity,
+                                                     itemsInCart = entry.CartQuantity
+                                                 }
+                                             }
+                            let cartTotal = (from item in _context.CartProducts
+                                             where cart.Id == item.CartId
+                                             select (item.Product.ProductPrice * item.CartQuantity)).Sum()
+                            //from item in cart_items
+                            //select (item.ProductPrice * item.itemsInCart)).Sum()
+                            select new { Products = cart_items, TotalPrice = cartTotal }).ToArray();
+
+            return Ok(cartInfo[0]);
+
+        }
+
+        [HttpPut]
+        public ActionResult EditCartItems([FromBody] CartViewModel _cartItem)
+        {
+            CartViewModelValidator validator = new CartViewModelValidator();
+            ValidationResult results = validator.Validate(_cartItem);
+
+            if (!results.IsValid)
+            {
+                foreach (var failure in results.Errors)
+                {
                     Errors.AddErrorToModelState(failure.PropertyName, failure.ErrorMessage, ModelState);
                 }
             }
 
-            if (!ModelState.IsValid || _cartItem.CartQuantity == 0){
+            if (!ModelState.IsValid || _cartItem.CartQuantity == 0)
+            {
                 return BadRequest(ModelState);
-            }          
+            }
 
-            var userId      = _caller.Claims.Single(c => c.Type == "id");
-            var cartId      = (from cart in _context.Carts
-                                where cart.UserId == int.Parse(userId.Value)
-                                select cart.Id).ToArray();
+            var userId = _caller.Claims.Single(c => c.Type == "id");
+            var cartItem = _context.CartProducts
+                                .Where(c => c.Cart.UserId == int.Parse(userId.Value) && c.ProductId == _cartItem.ProductId)
+                                .Select(a => a).ToArray();
 
-            var stockid             = (_context.Stock.Where(s => s.Product.Id == _cartItem.ProductId).Select(p => p.Id)).ToArray().First();
-            var stock               = _context.Stock.Find(stockid);
-            var remainingQuantity   = _cartItem.CartQuantity;
+            if (cartItem.Length == 0)
+            {
+                return NotFound();
+            }
+
+            var oldQuantity = cartItem[0].CartQuantity;
+            var stockid = (_context.Stock.Where(s => s.Product.Id == _cartItem.ProductId).Select(p => p.Id)).ToArray().First();
+            var stock = _context.Stock.Find(stockid);
+
+            if (stock.ProductQuantity + oldQuantity < _cartItem.CartQuantity)
+            {
+                cartItem[0].CartQuantity = stock.ProductQuantity + oldQuantity;
+                stock.ProductQuantity = 0;
+            }
+
+            else
+            {
+                cartItem[0].CartQuantity = _cartItem.CartQuantity;
+                stock.ProductQuantity = stock.ProductQuantity + oldQuantity - _cartItem.CartQuantity;
+            }
+
+            _context.Update(stock);
+            _context.CartProducts.Update(cartItem[0]);
+            _context.SaveChanges();
+
+            return Ok();
+        }
 
 
-            if(stock.ProductQuantity == 0){
+        [HttpPost]
+        public ActionResult PostCartItems([FromBody] CartViewModel _cartItem)
+        {
+            CartViewModelValidator validator = new CartViewModelValidator();
+            ValidationResult results = validator.Validate(_cartItem);
+
+            if (!results.IsValid)
+            {
+                foreach (var failure in results.Errors)
+                {
+                    Errors.AddErrorToModelState(failure.PropertyName, failure.ErrorMessage, ModelState);
+                }
+            }
+
+            if (!ModelState.IsValid || _cartItem.CartQuantity == 0)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userId = _caller.Claims.Single(c => c.Type == "id");
+            var cartId = (from cart in _context.Carts
+                          where cart.UserId == int.Parse(userId.Value)
+                          select cart.Id).ToArray();
+
+            var stockid = (_context.Stock.Where(s => s.Product.Id == _cartItem.ProductId).Select(p => p.Id)).ToArray().First();
+            var stock = _context.Stock.Find(stockid);
+            var remainingQuantity = _cartItem.CartQuantity;
+
+
+            if (stock.ProductQuantity == 0)
+            {
                 return Ok("Niet op vooraad");
             }
-            
-            else if(stock.ProductQuantity < _cartItem.CartQuantity){
+
+            else if (stock.ProductQuantity < _cartItem.CartQuantity)
+            {
                 remainingQuantity = stock.ProductQuantity;
                 stock.ProductQuantity = 0;
             }
 
-            else{
-                stock.ProductQuantity   = stock.ProductQuantity - _cartItem.CartQuantity;
+            else
+            {
+                stock.ProductQuantity = stock.ProductQuantity - _cartItem.CartQuantity;
             }
 
 
-            CartProduct product = new CartProduct(){
-                CartId          = cartId[0],
-                ProductId       = _cartItem.ProductId,
-                CartQuantity    = remainingQuantity,
-                CartDateAdded   = DateTime.Now
+            CartProduct product = new CartProduct()
+            {
+                CartId = cartId[0],
+                ProductId = _cartItem.ProductId,
+                CartQuantity = remainingQuantity,
+                CartDateAdded = DateTime.Now
             };
 
             _context.Add(product);
             _context.Stock.Update(stock);
             _context.SaveChanges();
-            
+
 
             return Ok();
         }
@@ -314,38 +324,41 @@ namespace Backend_Website.Controllers
         [HttpDelete]
         public ActionResult DeleteCartItems([FromBody] CartViewModel _cartItem)
         {
-            CartViewModelValidator validator    = new CartViewModelValidator();
-            ValidationResult results            = validator.Validate(_cartItem);
+            CartViewModelValidator validator = new CartViewModelValidator();
+            ValidationResult results = validator.Validate(_cartItem);
 
-            if (!results.IsValid){
-                foreach(var failure in results.Errors){
+            if (!results.IsValid)
+            {
+                foreach (var failure in results.Errors)
+                {
                     Errors.AddErrorToModelState(failure.PropertyName, failure.ErrorMessage, ModelState);
                 }
             }
 
-            if (!ModelState.IsValid){
+            if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
-            }          
+            }
 
-            var userId      = _caller.Claims.Single(c => c.Type == "id");
-            var cartItem    = (from item in _context.CartProducts
-                                   where item.Cart.UserId == int.Parse(userId.Value) && item.ProductId == _cartItem.ProductId
-                                   select item).ToArray();
-            
+            var userId = _caller.Claims.Single(c => c.Type == "id");
+            var cartItem = (from item in _context.CartProducts
+                            where item.Cart.UserId == int.Parse(userId.Value) && item.ProductId == _cartItem.ProductId
+                            select item).ToArray();
+
             if (cartItem.Length == 0)
             {
                 return NotFound();
             }
 
-            var stockid     = (_context.Stock.Where(s => s.Product.Id == _cartItem.ProductId).Select(p => p.Id)).ToArray().First();
-            var stock       = _context.Stock.Find(stockid);
+            var stockid = (_context.Stock.Where(s => s.Product.Id == _cartItem.ProductId).Select(p => p.Id)).ToArray().First();
+            var stock = _context.Stock.Find(stockid);
             stock.ProductQuantity = stock.ProductQuantity + cartItem[0].CartQuantity;
 
 
             _context.Stock.Update(stock);
             _context.CartProducts.Remove(cartItem[0]);
             _context.SaveChanges();
-        
+
             return Ok();
         }
 
