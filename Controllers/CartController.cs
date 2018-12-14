@@ -163,7 +163,7 @@ namespace Backend_Website.Controllers
                                 where cart.UserId   == int.Parse(userId.Value)
                                 let cart_items      =   from entry in _context.CartProducts
                                                         where cart.Id == entry.CartId
-                                                        select new {id                      = entry.Product.Id,
+                                                        select new {product = new {id                      = entry.Product.Id,
                                                                     productNumber           = entry.Product.ProductNumber,
                                                                     productName             = entry.Product.ProductName,
                                                                     productEAN              = entry.Product.ProductEAN,
@@ -178,7 +178,7 @@ namespace Backend_Website.Controllers
                                                                     Collection              = entry.Product.Collection.CollectionName,
                                                                     Brand                   = entry.Product.Brand.BrandName,
                                                                     Stock                   = entry.Product.Stock.ProductQuantity,
-                                                                    itemsInCart             = entry.CartQuantity}
+                                                                    itemsInCart             = entry.CartQuantity}}
                                 let cartTotal       =   (from item in _context.CartProducts
                                                         where cart.Id == item.CartId 
                                                         select (item.Product.ProductPrice * item.CartQuantity)).Sum()
