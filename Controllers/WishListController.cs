@@ -38,7 +38,7 @@ namespace Backend_Website.Controllers
                                 where wishlist.UserId   == int.Parse(userId.Value)
                                 let cart_items      =   from entry in _context.WishlistProduct
                                                         where wishlist.Id == entry.WishlistId
-                                                        select new {product =new {id                      = entry.Product.Id,
+                                                        select new {product =new {id        = entry.Product.Id,
                                                                     productNumber           = entry.Product.ProductNumber,
                                                                     productName             = entry.Product.ProductName,
                                                                     productEAN              = entry.Product.ProductEAN,

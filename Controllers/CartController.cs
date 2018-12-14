@@ -57,7 +57,7 @@ namespace Backend_Website.Controllers
             public IEnumerable<string> Image { get; set; }
         }
 
-        [HttpPut("ChangeQuantity")]
+        //[HttpPut("ChangeQuantity")]
         public ActionResult ProductStock_GoUp(int id)
         {
             var query = (from products in _context.Products
@@ -69,7 +69,7 @@ namespace Backend_Website.Controllers
             return Ok(query);
         }
 
-        [HttpPut("ChangeQuantity")]
+        //[HttpPut("ChangeQuantity")]
         public ActionResult ProductStock_GoDown(int id)
         {
             var query = (from products in _context.Products
@@ -119,7 +119,6 @@ namespace Backend_Website.Controllers
         }
 
 
-
         [HttpDelete("DeleteProductFromCart/{Given_CartId}/{Given_ProductId}")]
         public ActionResult DeleteProductFromCart(int Given_CartId, int Given_ProductId)
         {
@@ -163,7 +162,7 @@ namespace Backend_Website.Controllers
                                 where cart.UserId   == int.Parse(userId.Value)
                                 let cart_items      =   from entry in _context.CartProducts
                                                         where cart.Id == entry.CartId
-                                                        select new {product = new {id                      = entry.Product.Id,
+                                                        select new {product = new {id       = entry.Product.Id,
                                                                     productNumber           = entry.Product.ProductNumber,
                                                                     productName             = entry.Product.ProductName,
                                                                     productEAN              = entry.Product.ProductEAN,
@@ -287,6 +286,7 @@ namespace Backend_Website.Controllers
             _context.Add(product);
             _context.Stock.Update(stock);
             _context.SaveChanges();
+            
 
             return Ok();
         }
