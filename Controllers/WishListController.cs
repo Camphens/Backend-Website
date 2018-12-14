@@ -38,7 +38,7 @@ namespace Backend_Website.Controllers
                                 where wishlist.UserId   == int.Parse(userId.Value)
                                 let cart_items      =   from entry in _context.WishlistProduct
                                                         where wishlist.Id == entry.WishlistId
-                                                        select new {id                      = entry.Product.Id,
+                                                        select new {product =new {id                      = entry.Product.Id,
                                                                     productNumber           = entry.Product.ProductNumber,
                                                                     productName             = entry.Product.ProductName,
                                                                     productEAN              = entry.Product.ProductEAN,
@@ -52,7 +52,7 @@ namespace Backend_Website.Controllers
                                                                     Category                = entry.Product.Category.CategoryName,
                                                                     Collection              = entry.Product.Collection.CollectionName,
                                                                     Brand                   = entry.Product.Brand.BrandName,
-                                                                    Stock                   = entry.Product.Stock.ProductQuantity}
+                                                                    Stock                   = entry.Product.Stock.ProductQuantity}}
                                 select new {Products = cart_items}).ToArray();
             
             return Ok(cartInfo[0]);
@@ -116,7 +116,7 @@ namespace Backend_Website.Controllers
 
             var userId          = _caller.Claims.Single(c => c.Type == "id");
             var wishlistItem    = (from item in _context.WishlistProduct
-                                   where item.Wishlist.Id == int.Parse(userId.Value) && item.ProductId == _wishlistItem.ProductId
+                                   where item.Wishlist.UserId == int.Parse(userId.Value) && item.ProductId == _wishlistItem.ProductId
                                    select item).ToArray();
             
             if (wishlistItem.Length == 0)
@@ -142,10 +142,10 @@ namespace Backend_Website.Controllers
             foreach(var item in _wishlistItem.ProductId){
 
                 var cartItem    = (from c in _context.CartProducts
-                                   where c.Cart.Id == int.Parse(userId.Value) && c.ProductId == item
+                                   where c.Cart.UserId == int.Parse(userId.Value) && c.ProductId == item
                                    select c).ToArray();
                 var wishlistItem = (from w in _context.WishlistProduct
-                                   where w.Wishlist.Id == int.Parse(userId.Value) && w.ProductId == item
+                                   where w.Wishlist.UserId == int.Parse(userId.Value) && w.ProductId == item
                                    select w).ToArray();
 
                 var stockid = (_context.Stock.Where(s => s.Product.Id == item).Select(p => p.Id)).ToArray().First();

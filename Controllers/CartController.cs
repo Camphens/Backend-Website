@@ -309,7 +309,7 @@ namespace Backend_Website.Controllers
 
             var userId      = _caller.Claims.Single(c => c.Type == "id");
             var cartItem    = (from item in _context.CartProducts
-                                   where item.Cart.Id == int.Parse(userId.Value) && item.ProductId == _cartItem.ProductId
+                                   where item.Cart.UserId == int.Parse(userId.Value) && item.ProductId == _cartItem.ProductId
                                    select item).ToArray();
             
             if (cartItem.Length == 0)
