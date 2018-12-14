@@ -9,7 +9,7 @@ namespace Backend_Website.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CartController : Controller 
+    public class CartController : Controller
     {
         private readonly WebshopContext _context;
 
@@ -55,7 +55,7 @@ namespace Backend_Website.Controllers
                          select products.Stock).ToArray();
             query[0].ProductQuantity++;
 
-             _context.SaveChanges();
+            _context.SaveChanges();
             return Ok(query);
         }
 
@@ -73,9 +73,9 @@ namespace Backend_Website.Controllers
             {
                 query[0].ProductQuantity--;
             }
-            
 
-             _context.SaveChanges();
+
+            _context.SaveChanges();
             return Ok(query);
         }
 
@@ -104,7 +104,7 @@ namespace Backend_Website.Controllers
             {
                 search_product.CartQuantity++;
             }
-           ProductStock_GoDown(Given_ProductId);
+            ProductStock_GoDown(Given_ProductId);
             _context.SaveChanges();
         }
 
@@ -126,18 +126,28 @@ namespace Backend_Website.Controllers
             return Ok(product_in_cart);
         }
 
-        [HttpPost("TotalPrice/{given_cartid}")]
+        [HttpPost("CalculatePrice/{given_cartid}")]
         public void TotalPrice(int given_cartid)
         {
-            double? Sum_of_cartproducts = (from cartproducts in _context.CartProducts
-                                           where cartproducts.CartId == given_cartid
-                                           select (int?)cartproducts.CartQuantity *
-                                           cartproducts.Product.ProductPrice).Sum();
+            double Sum_of_cartproducts = (from cartproducts in _context.CartProducts
+                                       where cartproducts.CartId == given_cartid
+                                       select cartproducts.CartQuantity *
+                                       cartproducts.Product.ProductPrice).Sum();
             var price = Sum_of_cartproducts;
 
             var search_cart = _context.Carts.Find(given_cartid);
             search_cart.CartTotalPrice = price;
             _context.SaveChanges();
+        }
+
+        [HttpGet("RetrievePrice/{given_cartid}")]
+        public IActionResult RetrievePrice(int given_cartid)
+        {
+            var query = (from entries in _context.Carts
+                         where entries.Id == given_cartid
+                         select entries.CartTotalPrice).ToArray();
+            return Ok(query);
+
         }
     }
 }

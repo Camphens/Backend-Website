@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Backend_Website.Models;
+using Backend_Website.Controllers;
 
 namespace Backend_Website.Controllers
 {
@@ -65,6 +66,7 @@ namespace Backend_Website.Controllers
             }
             ProductStock_GoDown(Given_ProductId);
             _context.SaveChanges();
+            
         }
 
         [HttpPut("ChangeQuantity")]
