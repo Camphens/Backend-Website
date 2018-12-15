@@ -35,16 +35,16 @@ namespace Backend_Website.Controllers
 
             var products_in_cart = (from cart in _context.Carts
                                     where cart.Id == id
-                                    let cart_items =
-                                    (from entry in _context.CartProducts
-                                     from product in _context.Products
-                                     where entry.CartId == cart.Id && entry.ProductId == product.Id
-                                     select product).ToArray()
+                                    let cart_items = (from entry in _context.CartProducts
+                                                      from product in _context.Products
+                                                      where entry.CartId == cart.Id && entry.ProductId == product.Id
+                                                      select product).ToArray()
                                     let image = (from p in cart_items
                                                  from i in _context.ProductImages
                                                  where p.Id == i.ProductId
                                                  select i.ImageURL)
-                                    select new Items_in_Cart() { Cart = cart, AllItems = cart_items, Image = image }
+
+                                    select new Items_in_Cart() { Cart = cart, AllItems = cart_items, Image = image, totalprice = cart.CartTotalPrice }
                                    ).ToArray();
 
             return products_in_cart;
@@ -55,6 +55,7 @@ namespace Backend_Website.Controllers
             public Product[] AllItems { get; set; }
 
             public IEnumerable<string> Image { get; set; }
+            public double totalprice { get; set; }
         }
 
         //[HttpPut("ChangeQuantity")]
@@ -135,13 +136,13 @@ namespace Backend_Website.Controllers
             return Ok(product_in_cart);
         }
 
-         [HttpPost("CalculatePrice/{given_cartid}")]
+        [HttpPost("CalculatePrice/{given_cartid}")]
         public void TotalPrice(int given_cartid)
         {
             double Sum_of_cartproducts = (from cartproducts in _context.CartProducts
-                                       where cartproducts.CartId == given_cartid
-                                       select cartproducts.CartQuantity *
-                                       cartproducts.Product.ProductPrice).Sum();
+                                          where cartproducts.CartId == given_cartid
+                                          select cartproducts.CartQuantity *
+                                          cartproducts.Product.ProductPrice).Sum();
             var price = Sum_of_cartproducts;
 
             var search_cart = _context.Carts.Find(given_cartid);

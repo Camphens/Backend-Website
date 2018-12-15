@@ -47,12 +47,6 @@ namespace Backend_Website.Controllers
                 HouseNumber = address.HouseNumber,
             };
             _context.Addresses.Add(filled_in_adress);
-            // _context.SaveChanges();
-
-            // var find_adress_id = (from entries in _context.Addresses
-            //                       where entries.Street == address.Street && entries.City == address.City && entries.ZipCode == address.ZipCode && entries.HouseNumber == address.HouseNumber
-            //                       select entries.Id).ToArray();
-
             var user_adress = new UserAddress
             {
                 AddressId = filled_in_adress.Id,
