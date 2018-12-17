@@ -32,12 +32,13 @@ namespace Backend_Website.Controllers
             return Ok(orders);
         }
 
-
+        [Authorize(Policy = "ApiUser")]
         [HttpGet("GetOrdersOfTheUser")]
         public ActionResult GetAllOrders(int id)
         {
+            var userId = _caller.Claims.Single(c => c.Type == "id");
             var orders = (from items in _context.Orders
-                          where items.UserId == id
+                          where items.UserId == int.Parse(userId.Value)
                           select items).ToList();
             return Ok(orders);
 
@@ -135,10 +136,10 @@ namespace Backend_Website.Controllers
         }
 
 
-        [HttpPut("UpdateOrder/{id}")]
-        public ActionResult UpdateOrder(int id, [FromBody] Order UpdatedOrder)
+        [HttpPut("UpdateOrder")]
+        public ActionResult UpdateOrder([FromBody] Order UpdatedOrder)
         {
-            var Old_Orderr = _context.Orders.FirstOrDefault(Order_To_Be_Updated => Order_To_Be_Updated.Id == id);
+            var Old_Orderr = _context.Orders.FirstOrDefault(Order_To_Be_Updated => Order_To_Be_Updated.Id == UpdatedOrder.Id);
             if (Old_Orderr == null)
             {
                 return NotFound();
@@ -154,10 +155,12 @@ namespace Backend_Website.Controllers
         }
 
 
-        [HttpDelete("{id}")]
-        public IActionResult DeleteOrder(int id)
+        [HttpDelete("DelOrder")]
+        public IActionResult DeleteOrder(dynamic id)
         {
-            var order = _context.Orders.Find(id);
+            var OrderIdJson = JsonConvert.DeserializeObject(id.ToString());
+            int orderid = OrderIdJson.AddressId;
+            var order = _context.Orders.Find(orderid);
             if (order == null)
             {
                 return NotFound();

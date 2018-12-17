@@ -7,10 +7,12 @@ using Backend_Website.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+
+
 
 namespace Backend_Website.Controllers
 {
-    [Authorize(Policy = "ApiUser")]
     [Route("api/[controller]")]
     [ApiController]
     public class AddressController : Controller
@@ -25,16 +27,18 @@ namespace Backend_Website.Controllers
         }
 
 
-        [HttpGet("GetAddress/{id}")]
-        public ActionResult GetMyAddress(int id)
+        [HttpGet("GetAddress")]
+        public ActionResult GetMyAddress(dynamic ad)
         {
+            var AddressJson = JsonConvert.DeserializeObject(ad.ToString());
+            int address_id = AddressJson.AddressId;
             var address = (from addresses in _context.UserAddress
-                           where addresses.AddressId == id
+                           where addresses.AddressId == address_id
                            select addresses.Addresses).ToList();
             return Ok(address);
         }
 
-        // POST api/values
+        [Authorize(Policy = "ApiUser")]
         [HttpPost("MakeAnAddress")]
         public void FillinAdress([FromBody]Address address)
         {
@@ -58,11 +62,11 @@ namespace Backend_Website.Controllers
             _context.SaveChanges();
         }
 
-        // PUT api/values/5
-        [HttpPut("UpdateTheAddress/{id}")]
-        public IActionResult Update(int id, [FromBody] Address Updated_Address)
+        
+        [HttpPut("UpdateTheAddress")]
+        public IActionResult Update([FromBody] Address Updated_Address)
         {
-            var specific_address = _context.Addresses.FirstOrDefault(Address_To_Be_Changed => Address_To_Be_Changed.Id == id);
+            var specific_address = _context.Addresses.FirstOrDefault(Address_To_Be_Changed => Address_To_Be_Changed.Id == Updated_Address.Id);
             if (specific_address == null)
             {
                 return NotFound();
@@ -76,12 +80,15 @@ namespace Backend_Website.Controllers
             return Ok();
         }
 
-
-        [HttpDelete("DeleteAddress/{address_id}/{user_id}")]
-        public IActionResult DeleteAddress(int address_id, int user_id)
+        [Authorize(Policy = "ApiUser")]
+        [HttpDelete("DeleteAddress")]
+        public IActionResult DeleteAddress(dynamic address_id_)
         {
+            var userId = _caller.Claims.Single(c => c.Type == "id");
+            var AddressJson = JsonConvert.DeserializeObject(address_id_.ToString());
+            int address_id = AddressJson.AddressId;
             var adress_in_useradress = (from entry in _context.UserAddress
-                                        where entry.AddressId == address_id && entry.UserId == user_id
+                                        where entry.AddressId == address_id && entry.UserId == int.Parse(userId.Value)
                                         select entry).ToArray();
             var adress_in_address_table = _context.Addresses.Find(address_id);
 
