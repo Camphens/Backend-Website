@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Backend_Website.Models;
 using Newtonsoft.Json;
-using System.Net.Http;
-using System.Text;
-using System.Linq.Expressions;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Backend_Website.Controllers
 {
@@ -16,10 +15,12 @@ namespace Backend_Website.Controllers
     public class ProductController : Controller
     {
         private readonly WebshopContext _context;
+        private readonly ClaimsPrincipal _caller;
 
-        public ProductController(WebshopContext context)
+        public ProductController(WebshopContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _caller = httpContextAccessor.HttpContext.User;
         }
 
         public class Complete_Product
@@ -147,6 +148,7 @@ namespace Backend_Website.Controllers
 // "Stock":2,
 // "BrandName":"TEST"
 // }
+        //[Authorize(Policy = "_IsAdmin")]
         [HttpPost("create")]
         public void CreateProduct(dynamic ProductDetails)
         {
@@ -157,10 +159,11 @@ namespace Backend_Website.Controllers
             int _collectionId;
 
 
-
-            var category = ProductDetailsJSON.CategoryId;
-            Category c = _context.Categories.Find(category);
-            if(c==null)
+            dynamic c = 1;
+            if (ProductDetailsJSON.CategoryId != null){
+            int category = ProductDetailsJSON.CategoryId;
+            c = _context.Categories.Find(category);}
+            if(c==null || ProductDetailsJSON.CategoryId == null)
             {
                 Category _Category = new Category()
                     {
@@ -174,10 +177,11 @@ namespace Backend_Website.Controllers
             else{
                 _categoryId = ProductDetailsJSON.CategoryId;
             }
-
-            var brand = ProductDetailsJSON.BrandId;
-            Brand b = _context.Brands.Find(brand);
-            if(b==null)
+            dynamic b = 1;
+            if (ProductDetailsJSON.BrandId != null){
+            int brand = ProductDetailsJSON.BrandId;
+            b = _context.Brands.Find(brand);}
+            if(b==null || ProductDetailsJSON.BrandId == null)
             {
                 Brand Brand = new Brand()
                     {
@@ -322,6 +326,7 @@ namespace Backend_Website.Controllers
             }
 
         // PUT api/product/5
+        [Authorize(Policy = "_IsAdmin")]
         [HttpPut("{id}")]
         //Gets input from the body that is type Product (in Json)
         public void UpdateExistingProduct(int id, [FromBody] Product product)
@@ -348,6 +353,7 @@ namespace Backend_Website.Controllers
         }
 
         // DELETE api/product/5
+        [Authorize(Policy = "_IsAdmin")]
         [HttpDelete("{id}")]
         public void DeleteProduct(int id)
         {
