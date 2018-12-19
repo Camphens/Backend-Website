@@ -168,18 +168,21 @@ namespace Backend_Website.Controllers
 
             if (exists.Length != 0)
             {
-                return Ok("Staat al in Wishlist");
+                _context.WishlistProduct.Remove(exists[0]);
+                //return Ok("Staat al in Wishlist");
             }
 
-            WishlistProduct product = new WishlistProduct()
-            {
-                WishlistId = wishlistId[0],
-                ProductId = _wishlistItem.ProductId
-            };
+            else{
+                WishlistProduct product = new WishlistProduct()
+                {
+                    WishlistId = wishlistId[0],
+                    ProductId = _wishlistItem.ProductId
+                };
 
-            _context.Add(product);
+                _context.Add(product);
+            }
+            
             _context.SaveChanges();
-
             return Ok();
         }
 

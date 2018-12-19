@@ -13,8 +13,8 @@ namespace Backend_Website.Helpers
       {
         var response = new
         {
-          id = identity.Claims.Single(c => c.Type == "id").Value,
-          // role = identity.Claims.Single(c => c.Type == "role").Value,
+          //id = identity.Claims.Single(c => c.Type == "id").Value,
+          role = identity.Claims.Single(c => c.Type == "rol").Value,
           auth_token = await jwtGenerator.GenerateEncodedToken(emailAddress, identity),
           expires_in = (int)jwtOptions.ValidFor.TotalSeconds
         };
