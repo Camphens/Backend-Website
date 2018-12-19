@@ -46,24 +46,6 @@ namespace Backend_Website.Controllers
             public IOrderedQueryable products { get; set; }
         }
 
-        // public class FilterV
-        // {
-        //     public string filter1 {get;set;}
-        //     public string filter2 {get;set;}
-        //     public string filter3 {get;set;}
-        //     public string filter4 {get;set;}
-        //     public string filter5 {get;set;}
-        // }
-
-        public class Filter
-        {
-            public int kind { get; set; }
-            public string att { get; set; }
-            public object value { get; set; }
-            public Filter a1 { get; set; }
-            public Filter a2 { get; set; }
-        }
-
         // GET api/product
         [HttpGet]
         public IActionResult GetAllProducts()
@@ -72,7 +54,7 @@ namespace Backend_Website.Controllers
             var res = (from p in _context.Products
                        orderby p
                        let images =
-(from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+                       (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
                        let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
                        let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
                        let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
@@ -92,7 +74,7 @@ namespace Backend_Website.Controllers
             var res = (from p in _context.Products
                        where p.Id == id
                        let images =
-(from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+                       (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
                        let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
                        let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
                        let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
@@ -121,7 +103,7 @@ namespace Backend_Website.Controllers
             var res = (from p in _context.Products
                        orderby p
                        let images =
-(from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+                       (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
                        let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
                        let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
                        let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
@@ -144,45 +126,92 @@ namespace Backend_Website.Controllers
             return Ok(page);
         }
 
-        // // POST api/product
-        // //verplicht meegeven: _typeid, categoryid, collectionid, brandid, stockid
-        // [HttpPost]
-        // //Gets input from the body that is type Product (in Json)
-        // public void CreateNewProduct([FromBody] Product product)
-        // {    
-        //     //Add the input to the table Products and save
-        //     _context.Products.Add(product);
-        //     _context.SaveChanges();
-        // }
-
-        [HttpPost("CreateC")]
-        public void CreateCategory(dynamic Categorydetails)
+// Creating new Product - +1 bij StockId, ProductId en ImageId - In Postman:
+// {"ProductName": "Testingtesting",
+// "TypeId":5,
+// "BrandId":100,
+// "CategoryId":20,
+// "CollectionId":5,
+// "StockId":4004,
+// "ProductId":6014,
+// "ProductNumber":"",
+// "ProductEAN":"",
+// "ProductInfo":"",
+// "ProductDescription":"",
+// "ProductSpecification":"",
+// "ProductPrice":50.00,
+// "ProductColor":"",
+// "CategoryName":"TEST",
+// "ImageURL":"",
+// "ImageId":15005,
+// "Stock":2,
+// "BrandName":"TEST"
+// }
+        [HttpPost("create")]
+        public void CreateProduct(dynamic ProductDetails)
         {
-            dynamic CategorydetailsJSON = JsonConvert.DeserializeObject(Categorydetails.ToString());
-            Console.WriteLine(CategorydetailsJSON);
+            dynamic ProductDetailsJSON = JsonConvert.DeserializeObject(ProductDetails.ToString());
 
+            int category = ProductDetailsJSON.CategoryId;
+            Category c = _context.Categories.Find(category);
+            if(c==null)
+            {
             Category Category = new Category()
-            {
-                CategoryName = CategorydetailsJSON.CategoryName,
-                Id = CategorydetailsJSON.CategoryId
-            };
-            _context.Categories.Add(Category);
+                {
+                    Id = ProductDetailsJSON.CategoryId,
+                    CategoryName = ProductDetailsJSON.CategoryName
+                }; 
+                _context.Categories.Add(Category);
+                _context.SaveChanges();
+            }
 
-            _Type Type = new _Type()
+            int brand = ProductDetailsJSON.BrandId;
+            Brand b = _context.Brands.Find(brand);
+            if(b==null)
             {
-                _TypeName = CategorydetailsJSON.TypeName,
-                Id = CategorydetailsJSON.TypeId
+            Brand Brand = new Brand()
+                {
+                    Id = ProductDetailsJSON.BrandId,
+                    BrandName = ProductDetailsJSON.BrandName
+                }; 
+                _context.Brands.Add(Brand);
+                _context.SaveChanges();
+            }
 
-            };
-            _context.Types.Add(Type);
-
-            Category_Type CT = new Category_Type()
+            Product Product = new Product()
             {
-                CategoryId = Category.Id,
-                _TypeId = Type.Id
+                ProductName = ProductDetailsJSON.ProductName,
+                _TypeId = ProductDetailsJSON.TypeId,
+                CategoryId = ProductDetailsJSON.CategoryId,
+                CollectionId = ProductDetailsJSON.CollectionId,
+                BrandId = ProductDetailsJSON.BrandId,
+                StockId = ProductDetailsJSON.StockId,
+                Id = ProductDetailsJSON.ProductId,
+                ProductNumber = ProductDetailsJSON.ProductNumber,
+                ProductEAN = ProductDetailsJSON.ProductEAN,
+                ProductInfo = ProductDetailsJSON.ProductInfo,
+                ProductDescription = ProductDetailsJSON.ProductDescription,
+                ProductSpecification = ProductDetailsJSON.ProductSpecification,
+                ProductPrice = ProductDetailsJSON.ProductPrice,
+                ProductColor = ProductDetailsJSON.ProductColor,
             };
-            _context.CategoryType.Add(CT);
-            _context.SaveChanges();
+            _context.Products.Add(Product); 
+
+            ProductImage ProductImage = new ProductImage()
+            {
+                ProductId = Product.Id,
+                ImageURL = ProductDetailsJSON.ImageURL,
+                Id = ProductDetailsJSON.ImageId
+            };
+            _context.ProductImages.Add(ProductImage);
+
+            Stock Stock = new Stock()
+            {
+                Id = Product.StockId,
+                ProductQuantity = ProductDetailsJSON.Stock
+            };
+            _context.Stock.Add(Stock);
+            _context.SaveChanges();   
         }
 
         [HttpGet("filter/{page_index}/{page_size}")]
@@ -280,7 +309,7 @@ namespace Backend_Website.Controllers
         //Gets input from the body that is type Product (in Json)
         public void UpdateExistingProduct(int id, [FromBody] Product product)
         {
-            //Find all products that has the given id in table Products
+            //Find all products that have the given id in table Products
             Product p = _context.Products.Find(id);
             //Check if there is any input(value) for the attributes
             //If there is input, assign the new value to the attribute
@@ -319,7 +348,7 @@ namespace Backend_Website.Controllers
                        where p.ProductName.Contains(searchstring) | p.ProductNumber.Contains(searchstring) | p.Brand.BrandName.Contains(searchstring)
                        orderby p.Id
                        let images =
-(from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
+                       (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
                        let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
                        let category = (from cat in _context.Categories where p.CategoryId == cat.Id select cat.CategoryName)
                        let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
