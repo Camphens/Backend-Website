@@ -152,48 +152,70 @@ namespace Backend_Website.Controllers
         {
             dynamic ProductDetailsJSON = JsonConvert.DeserializeObject(ProductDetails.ToString());
 
-            int category = ProductDetailsJSON.CategoryId;
+            int _categoryId;
+            int _brandId;
+            int _collectionId;
+
+
+
+            var category = ProductDetailsJSON.CategoryId;
             Category c = _context.Categories.Find(category);
             if(c==null)
             {
-            Category Category = new Category()
-                {
-                    Id = ProductDetailsJSON.CategoryId,
-                    CategoryName = ProductDetailsJSON.CategoryName
-                }; 
-                _context.Categories.Add(Category);
-                _context.SaveChanges();
+                Category _Category = new Category()
+                    {
+                        Id = _context.Categories.Select(a => a.Id).Max() + 1,
+                        CategoryName = ProductDetailsJSON.CategoryName
+                    }; 
+                _context.Categories.Add(_Category);
+                _categoryId = _Category.Id;
+                //_context.SaveChanges();
+            }
+            else{
+                _categoryId = ProductDetailsJSON.CategoryId;
             }
 
-            int brand = ProductDetailsJSON.BrandId;
+            var brand = ProductDetailsJSON.BrandId;
             Brand b = _context.Brands.Find(brand);
             if(b==null)
             {
-            Brand Brand = new Brand()
-                {
-                    Id = ProductDetailsJSON.BrandId,
-                    BrandName = ProductDetailsJSON.BrandName
-                }; 
-                _context.Brands.Add(Brand);
-                _context.SaveChanges();
+                Brand Brand = new Brand()
+                    {
+                        Id = _context.Brands.Select(a => a.Id).Max() + 1,
+                        BrandName = ProductDetailsJSON.BrandName
+                    }; 
+                    _context.Brands.Add(Brand);
+                    _brandId = Brand.Id;
+                    //_context.SaveChanges();
             }
+            else{
+                _brandId = ProductDetailsJSON.BrandId;
+            }
+
+            Stock Stock = new Stock()
+            {
+                //Id = ProductDetailsJSON.StockId,
+                Id = _context.Stock.Select(a => a.Id).Max() + 1,
+                ProductQuantity = ProductDetailsJSON.Stock
+            };
+            _context.Stock.Add(Stock);
 
             Product Product = new Product()
             {
-                ProductName = ProductDetailsJSON.ProductName,
-                _TypeId = ProductDetailsJSON.TypeId,
-                CategoryId = ProductDetailsJSON.CategoryId,
-                CollectionId = ProductDetailsJSON.CollectionId,
-                BrandId = ProductDetailsJSON.BrandId,
-                StockId = ProductDetailsJSON.StockId,
-                Id = ProductDetailsJSON.ProductId,
-                ProductNumber = ProductDetailsJSON.ProductNumber,
-                ProductEAN = ProductDetailsJSON.ProductEAN,
-                ProductInfo = ProductDetailsJSON.ProductInfo,
-                ProductDescription = ProductDetailsJSON.ProductDescription,
-                ProductSpecification = ProductDetailsJSON.ProductSpecification,
-                ProductPrice = ProductDetailsJSON.ProductPrice,
-                ProductColor = ProductDetailsJSON.ProductColor,
+                ProductName             = ProductDetailsJSON.ProductName,
+                _TypeId                 = ProductDetailsJSON.TypeId,
+                CategoryId              = _categoryId,  //ProductDetailsJSON.CategoryId,
+                CollectionId            = ProductDetailsJSON.CollectionId,
+                BrandId                 = _brandId, //ProductDetailsJSON.BrandId,
+                StockId                 = Stock.Id, //ProductDetailsJSON.StockId,
+                Id                      = _context.Products.Select(a => a.Id).Max() + 1,
+                ProductNumber           = ProductDetailsJSON.ProductNumber,
+                ProductEAN              = ProductDetailsJSON.ProductEAN,
+                ProductInfo             = ProductDetailsJSON.ProductInfo,
+                ProductDescription      = ProductDetailsJSON.ProductDescription,
+                ProductSpecification    = ProductDetailsJSON.ProductSpecification,
+                ProductPrice            = ProductDetailsJSON.ProductPrice,
+                ProductColor            = ProductDetailsJSON.ProductColor,
             };
             _context.Products.Add(Product); 
 
@@ -201,16 +223,11 @@ namespace Backend_Website.Controllers
             {
                 ProductId = Product.Id,
                 ImageURL = ProductDetailsJSON.ImageURL,
-                Id = ProductDetailsJSON.ImageId
+                //Id = ProductDetailsJSON.ImageId
+                Id = _context.ProductImages.Select(a => a.Id).Max() + 1,
             };
             _context.ProductImages.Add(ProductImage);
 
-            Stock Stock = new Stock()
-            {
-                Id = Product.StockId,
-                ProductQuantity = ProductDetailsJSON.Stock
-            };
-            _context.Stock.Add(Stock);
             _context.SaveChanges();   
         }
 
