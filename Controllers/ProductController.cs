@@ -127,27 +127,27 @@ namespace Backend_Website.Controllers
             return Ok(page);
         }
 
-// Creating new Product - +1 bij StockId, ProductId en ImageId - In Postman:
-// {"ProductName": "Testingtesting",
-// "TypeId":5,
-// "BrandId":100,
-// "CategoryId":20,
-// "CollectionId":5,
-// "StockId":4004,
-// "ProductId":6014,
-// "ProductNumber":"",
-// "ProductEAN":"",
-// "ProductInfo":"",
-// "ProductDescription":"",
-// "ProductSpecification":"",
-// "ProductPrice":50.00,
-// "ProductColor":"",
-// "CategoryName":"TEST",
-// "ImageURL":"",
-// "ImageId":15005,
-// "Stock":2,
-// "BrandName":"TEST"
-// }
+        // Creating new Product - +1 bij StockId, ProductId en ImageId - In Postman:
+        // {"ProductName": "Testingtesting",
+        // "TypeId":5,
+        // "BrandId":100,
+        // "CategoryId":20,
+        // "CollectionId":5,
+        // "StockId":4004,
+        // "ProductId":6014,
+        // "ProductNumber":"",
+        // "ProductEAN":"",
+        // "ProductInfo":"",
+        // "ProductDescription":"",
+        // "ProductSpecification":"",
+        // "ProductPrice":50.00,
+        // "ProductColor":"",
+        // "CategoryName":"TEST",
+        // "ImageURL":"",
+        // "ImageId":15005,
+        // "Stock":2,
+        // "BrandName":"TEST"
+        // }
         //[Authorize(Policy = "_IsAdmin")]
         [HttpPost("create")]
         public void CreateProduct(dynamic ProductDetails)
@@ -156,46 +156,86 @@ namespace Backend_Website.Controllers
 
             int _categoryId;
             int _brandId;
-            int _collectionId;
+            //int _collectionId;
+            int _typeid;
 
-
+            ///////////////CATEGORY////////////////
             dynamic c = 1;
-            if (ProductDetailsJSON.CategoryId != null){
-            int category = ProductDetailsJSON.CategoryId;
-            c = _context.Categories.Find(category);}
-            if(c==null || ProductDetailsJSON.CategoryId == null)
+            if (ProductDetailsJSON.CategoryId != null)
+            {
+                int category = ProductDetailsJSON.CategoryId;
+                c = _context.Categories.Find(category);
+            }
+            if (c == null || ProductDetailsJSON.CategoryId == null)
             {
                 Category _Category = new Category()
-                    {
-                        Id = _context.Categories.Select(a => a.Id).Max() + 1,
-                        CategoryName = ProductDetailsJSON.CategoryName
-                    }; 
+                {
+                    Id = _context.Categories.Select(a => a.Id).Max() + 1,
+                    CategoryName = ProductDetailsJSON.CategoryName
+                };
                 _context.Categories.Add(_Category);
                 _categoryId = _Category.Id;
                 //_context.SaveChanges();
             }
-            else{
+            else
+            {
                 _categoryId = ProductDetailsJSON.CategoryId;
             }
+            
+            ///////////////TYPE////////////////
+            dynamic t = 1;
+            if (ProductDetailsJSON.TypeId != null)
+            {
+                int type = ProductDetailsJSON.TypeId;
+                t = _context.Types.Find(type);
+            }
+            if (t == null || ProductDetailsJSON.TypeId == null)
+            {
+                _Type _Type = new _Type()
+                {
+                    Id = _context.Types.Select(a => a.Id).Max() + 1,
+                    _TypeName = ProductDetailsJSON.TypeName
+                };
+                _context.Types.Add(_Type);
+                _typeid = _Type.Id;
+
+                Category_Type CT = new Category_Type()
+                {
+                    CategoryId = _categoryId,
+                    _TypeId = _typeid
+
+                };
+                _context.CategoryType.Add(CT);
+            }
+            else
+            {
+                _typeid = ProductDetailsJSON.TypeId;
+            }
+
+            ///////////////BRAND////////////////
             dynamic b = 1;
-            if (ProductDetailsJSON.BrandId != null){
-            int brand = ProductDetailsJSON.BrandId;
-            b = _context.Brands.Find(brand);}
-            if(b==null || ProductDetailsJSON.BrandId == null)
+            if (ProductDetailsJSON.BrandId != null)
+            {
+                int brand = ProductDetailsJSON.BrandId;
+                b = _context.Brands.Find(brand);
+            }
+            if (b == null || ProductDetailsJSON.BrandId == null)
             {
                 Brand Brand = new Brand()
-                    {
-                        Id = _context.Brands.Select(a => a.Id).Max() + 1,
-                        BrandName = ProductDetailsJSON.BrandName
-                    }; 
-                    _context.Brands.Add(Brand);
-                    _brandId = Brand.Id;
-                    //_context.SaveChanges();
+                {
+                    Id = _context.Brands.Select(a => a.Id).Max() + 1,
+                    BrandName = ProductDetailsJSON.BrandName
+                };
+                _context.Brands.Add(Brand);
+                _brandId = Brand.Id;
+                //_context.SaveChanges();
             }
-            else{
+            else
+            {
                 _brandId = ProductDetailsJSON.BrandId;
             }
 
+            ///////////////STOCK////////////////
             Stock Stock = new Stock()
             {
                 //Id = ProductDetailsJSON.StockId,
@@ -204,25 +244,27 @@ namespace Backend_Website.Controllers
             };
             _context.Stock.Add(Stock);
 
+            ///////////////PRODUCT////////////////
             Product Product = new Product()
             {
-                ProductName             = ProductDetailsJSON.ProductName,
-                _TypeId                 = ProductDetailsJSON.TypeId,
-                CategoryId              = _categoryId,  //ProductDetailsJSON.CategoryId,
-                CollectionId            = ProductDetailsJSON.CollectionId,
-                BrandId                 = _brandId, //ProductDetailsJSON.BrandId,
-                StockId                 = Stock.Id, //ProductDetailsJSON.StockId,
-                Id                      = _context.Products.Select(a => a.Id).Max() + 1,
-                ProductNumber           = ProductDetailsJSON.ProductNumber,
-                ProductEAN              = ProductDetailsJSON.ProductEAN,
-                ProductInfo             = ProductDetailsJSON.ProductInfo,
-                ProductDescription      = ProductDetailsJSON.ProductDescription,
-                ProductSpecification    = ProductDetailsJSON.ProductSpecification,
-                ProductPrice            = ProductDetailsJSON.ProductPrice,
-                ProductColor            = ProductDetailsJSON.ProductColor,
+                ProductName = ProductDetailsJSON.ProductName,
+                _TypeId = _typeid,//ProductDetailsJSON.TypeId,
+                CategoryId = _categoryId,  //ProductDetailsJSON.CategoryId,
+                CollectionId = ProductDetailsJSON.CollectionId,
+                BrandId = _brandId, //ProductDetailsJSON.BrandId,
+                StockId = Stock.Id, //ProductDetailsJSON.StockId,
+                Id = _context.Products.Select(a => a.Id).Max() + 1,
+                ProductNumber = ProductDetailsJSON.ProductNumber,
+                ProductEAN = ProductDetailsJSON.ProductEAN,
+                ProductInfo = ProductDetailsJSON.ProductInfo,
+                ProductDescription = ProductDetailsJSON.ProductDescription,
+                ProductSpecification = ProductDetailsJSON.ProductSpecification,
+                ProductPrice = ProductDetailsJSON.ProductPrice,
+                ProductColor = ProductDetailsJSON.ProductColor,
             };
-            _context.Products.Add(Product); 
+            _context.Products.Add(Product);
 
+            ///////////////IMAGE////////////////
             ProductImage ProductImage = new ProductImage()
             {
                 ProductId = Product.Id,
@@ -232,7 +274,7 @@ namespace Backend_Website.Controllers
             };
             _context.ProductImages.Add(ProductImage);
 
-            _context.SaveChanges();   
+            _context.SaveChanges();
         }
 
         [HttpGet("filter/{page_index}/{page_size}")]
@@ -286,7 +328,7 @@ namespace Backend_Website.Controllers
                       let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
                       select new Complete_Product() { Product = p, Images = image, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock };
             }
-             if (CategoryId.Length != 0)
+            if (CategoryId.Length != 0)
             {
                 result = result.Where(m => CategoryId.Contains(m.CategoryId));
                 res = from p in result
@@ -300,7 +342,7 @@ namespace Backend_Website.Controllers
             }
             if (CollectionId.Length != 0)
             {
-                 result = result.Where(m => CollectionId.Contains(m.CollectionId));
+                result = result.Where(m => CollectionId.Contains(m.CollectionId));
                 res = from p in result
                       let image = (from i in _context.ProductImages where p.Id == i.ProductId select i.ImageURL).ToArray()
                       let type = (from t in _context.Types where p._TypeId == t.Id select t._TypeName)
@@ -310,7 +352,7 @@ namespace Backend_Website.Controllers
                       let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
                       select new Complete_Product() { Product = p, Images = image, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock };
             }
-                        
+
             int totalitems = res.Count();
             int totalpages = totalitems / page_size;
             //totalpages+1 because the first page is 1 and not 0
@@ -321,9 +363,9 @@ namespace Backend_Website.Controllers
             page_index = page_index - 1;
             int skip = page_index * page_size;
             res = res.Skip(skip).Take(page_size);
-            PaginationPage page = new PaginationPage { totalpages = totalpages, totalitems = totalitems, products = res.ToArray()};
+            PaginationPage page = new PaginationPage { totalpages = totalpages, totalitems = totalitems, products = res.ToArray() };
             return Ok(page);
-            }
+        }
 
         // PUT api/product/5
         [Authorize(Policy = "_IsAdmin")]
@@ -391,7 +433,7 @@ namespace Backend_Website.Controllers
             res = res.Skip(skip).Take(page_size).ToArray();
             PaginationPage page = new PaginationPage { totalpages = totalpages, totalitems = totalitems, products = res };
             return Ok(page);
-        }   
+        }
     }
 
 }
