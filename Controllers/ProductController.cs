@@ -360,8 +360,8 @@ namespace Backend_Website.Controllers
             int totalpages = totalitems / page_size;
             //totalpages+1 because the first page is 1 and not 0
             totalpages = totalpages + 1;
-            string Error = "Error";
-            if (res.Count() < 1 | page_index < 1) return Ok(Error);
+            //string Error = "Error";
+            //if (res.Count() < 1 | page_index < 1) return Ok(Error);
             //page_index-1 so the first page is 1 and not 0
             page_index = page_index - 1;
             int skip = page_index * page_size;
