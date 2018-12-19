@@ -136,21 +136,20 @@ namespace Backend_Website.Controllers
             return Ok(product_in_cart);
         }
 
-        [HttpPost("CalculatePrice/{given_cartid}")]
+        //[HttpPost("CalculatePrice/{given_cartid}")]
         public void TotalPrice(int given_cartid)
         {
-            double Sum_of_cartproducts = (from cartproducts in _context.CartProducts
+            var Sum_of_cartproducts = (from cartproducts in _context.CartProducts
                                           where cartproducts.CartId == given_cartid
                                           select cartproducts.CartQuantity *
                                           cartproducts.Product.ProductPrice).Sum();
-            var price = Sum_of_cartproducts;
 
             var search_cart = _context.Carts.Find(given_cartid);
-            search_cart.CartTotalPrice = price;
+            search_cart.CartTotalPrice = Sum_of_cartproducts;
             _context.SaveChanges();
         }
 
-        [HttpGet("RetrievePrice/{given_cartid}")]
+        //[HttpGet("RetrievePrice/{given_cartid}")]
         public IActionResult RetrievePrice(int given_cartid)
         {
             var query = (from entries in _context.Carts
@@ -196,11 +195,13 @@ namespace Backend_Website.Controllers
                                                      itemsInCart = entry.CartQuantity
                                                  }
                                              }
-                            let cartTotal = (from item in _context.CartProducts
-                                             where cart.Id == item.CartId
-                                             select (item.Product.ProductPrice * item.CartQuantity)).Sum()
-                            //from item in cart_items
-                            //select (item.ProductPrice * item.itemsInCart)).Sum()
+                            // let cartTotal = (from item in _context.CartProducts
+                            //                  where cart.Id == item.CartId
+                            //                  select (item.Product.ProductPrice * item.CartQuantity)).Sum()
+                            let cartTotal = (from item in _context.Carts
+                                             where cart.Id == item.Id
+                                             select item.CartTotalPrice)
+                            
                             select new { Products = cart_items, TotalPrice = cartTotal }).ToArray();
 
             return Ok(cartInfo[0]);
@@ -210,8 +211,8 @@ namespace Backend_Website.Controllers
         [HttpPut]
         public ActionResult EditCartItems([FromBody] CartViewModel _cartItem)
         {
-            CartViewModelValidator validator = new CartViewModelValidator();
-            ValidationResult results = validator.Validate(_cartItem);
+            CartViewModelValidator validator    = new CartViewModelValidator();
+            ValidationResult results            = validator.Validate(_cartItem);
 
             if (!results.IsValid)
             {
@@ -237,8 +238,8 @@ namespace Backend_Website.Controllers
             }
 
             var oldQuantity = cartItem[0].CartQuantity;
-            var stockid = (_context.Stock.Where(s => s.Product.Id == _cartItem.ProductId).Select(p => p.Id)).ToArray().First();
-            var stock = _context.Stock.Find(stockid);
+            var stockid     = (_context.Stock.Where(s => s.Product.Id == _cartItem.ProductId).Select(p => p.Id)).ToArray().First();
+            var stock       = _context.Stock.Find(stockid);
 
             if (stock.ProductQuantity + oldQuantity < _cartItem.CartQuantity)
             {
@@ -251,6 +252,8 @@ namespace Backend_Website.Controllers
                 cartItem[0].CartQuantity = _cartItem.CartQuantity;
                 stock.ProductQuantity = stock.ProductQuantity + oldQuantity - _cartItem.CartQuantity;
             }
+            
+            TotalPrice(cartItem[0].CartId);
 
             _context.Update(stock);
             _context.CartProducts.Update(cartItem[0]);
@@ -259,12 +262,11 @@ namespace Backend_Website.Controllers
             return Ok();
         }
 
-
         [HttpPost]
         public ActionResult PostCartItems([FromBody] CartViewModel _cartItem)
         {
-            CartViewModelValidator validator = new CartViewModelValidator();
-            ValidationResult results = validator.Validate(_cartItem);
+            CartViewModelValidator validator    = new CartViewModelValidator();
+            ValidationResult results            = validator.Validate(_cartItem);
 
             if (!results.IsValid)
             {
@@ -279,13 +281,13 @@ namespace Backend_Website.Controllers
                 return BadRequest(ModelState);
             }
 
-            var userId = _caller.Claims.Single(c => c.Type == "id");
-            var cartId = (from cart in _context.Carts
+            var userId  = _caller.Claims.Single(c => c.Type == "id");
+            var cartId  = (from cart in _context.Carts
                           where cart.UserId == int.Parse(userId.Value)
                           select cart.Id).ToArray();
 
             var stockid = (_context.Stock.Where(s => s.Product.Id == _cartItem.ProductId).Select(p => p.Id)).ToArray().First();
-            var stock = _context.Stock.Find(stockid);
+            var stock   = _context.Stock.Find(stockid);
             var remainingQuantity = _cartItem.CartQuantity;
 
 
@@ -313,6 +315,8 @@ namespace Backend_Website.Controllers
                 CartQuantity = remainingQuantity,
                 CartDateAdded = DateTime.Now
             };
+
+            TotalPrice(cartId[0]);
 
             _context.Add(product);
             _context.Stock.Update(stock);

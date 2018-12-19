@@ -44,7 +44,6 @@ namespace Backend_Website.Controllers
 
         }
 
-        // GET api/cart/5
         [HttpGet("GetSpecificOrder/{id}")]
         public ActionResult GetSpecificOrder(int id)
         {
@@ -57,36 +56,35 @@ namespace Backend_Website.Controllers
             return new OkObjectResult(specific_order);
         }
 
+        // [HttpPost("MakeOrder")]
+        // public void MakeOrder(dynamic Orderdetails)
+        // {
+        //     dynamic OrderdetailsJSON = JsonConvert.DeserializeObject(Orderdetails.ToString());
+        //     OrderStatus Status = new OrderStatus()
+        //     {
+        //         OrderDescription = "Pending"
+        //     };
+        //     _context.OrderStatus.Add(Status);
 
-        [HttpPost("MakeOrder")]
-        public void MakeOrder(dynamic Orderdetails)
-        {
-            dynamic OrderdetailsJSON = JsonConvert.DeserializeObject(Orderdetails.ToString());
-            OrderStatus Status = new OrderStatus()
-            {
-                OrderDescription = "Pending"
-            };
-            _context.OrderStatus.Add(Status);
+        //     Order Order = new Order()
+        //     {
+        //         UserId = OrderdetailsJSON.userID,
+        //         AddressId = OrderdetailsJSON.AddressID,
+        //         OrderStatusId = Status.Id
+        //     };
+        //     _context.Orders.Add(Order);
 
-            Order Order = new Order()
-            {
-                UserId = OrderdetailsJSON.userID,
-                AddressId = OrderdetailsJSON.AddressID,
-                OrderStatusId = Status.Id
-            };
-            _context.Orders.Add(Order);
-
-            foreach (var item in OrderdetailsJSON.productIDs)
-            {
-                OrderProduct product = new OrderProduct()
-                {
-                    OrderId = Order.Id,
-                    ProductId = item
-                };
-                _context.OrderProduct.Add(product);
-            }
-            _context.SaveChanges();
-        }
+        //     foreach (var item in OrderdetailsJSON.productIDs)
+        //     {
+        //         OrderProduct product = new OrderProduct()
+        //         {
+        //             OrderId = Order.Id,
+        //             ProductId = item
+        //         };
+        //         _context.OrderProduct.Add(product);
+        //     }
+        //     _context.SaveChanges();
+        // }
 
         [Authorize(Policy = "ApiUser")]
         [HttpPost]
@@ -135,7 +133,6 @@ namespace Backend_Website.Controllers
             _context.SaveChanges();
         }
 
-
         [HttpPut("UpdateOrder")]
         public ActionResult UpdateOrder([FromBody] Order UpdatedOrder)
         {
@@ -153,7 +150,6 @@ namespace Backend_Website.Controllers
                 return Ok(Old_Orderr);
             }
         }
-
 
         [HttpDelete("DelOrder")]
         public IActionResult DeleteOrder(dynamic id)
@@ -184,7 +180,6 @@ namespace Backend_Website.Controllers
             _context.SaveChanges();
         }
 
-        
         public IActionResult RetrievePrice(int given_cartid)
         {
             var query = (from entries in _context.Carts
