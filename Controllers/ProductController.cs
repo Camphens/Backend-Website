@@ -156,7 +156,7 @@ namespace Backend_Website.Controllers
 
             int _categoryId;
             int _brandId;
-            //int _collectionId;
+            int _collectionId;
             int _typeid;
 
             ///////////////CATEGORY////////////////
@@ -181,7 +181,7 @@ namespace Backend_Website.Controllers
             {
                 _categoryId = ProductDetailsJSON.CategoryId;
             }
-            
+
             ///////////////TYPE////////////////
             dynamic t = 1;
             if (ProductDetailsJSON.TypeId != null)
@@ -234,6 +234,29 @@ namespace Backend_Website.Controllers
             {
                 _brandId = ProductDetailsJSON.BrandId;
             }
+            
+            ///////////////Collection////////////////
+            dynamic co = 1;
+            if (ProductDetailsJSON.CollectionId != null)
+            {
+                int coll = ProductDetailsJSON.CollectionId;
+                co = _context.Collections.Find(coll);
+            }
+            if (co == null || ProductDetailsJSON.CollectionId == null)
+            {
+                Collection Collection = new Collection()
+                {
+                    Id = _context.Collections.Select(a => a.Id).Max() + 1,
+                    BrandId = _brandId,
+                    CollectionName = ProductDetailsJSON.CollectionName
+                };
+                _context.Collections.Add(Collection);
+                _collectionId = Collection.Id;
+            }
+            else
+            {
+                _collectionId = ProductDetailsJSON.CollectionId;
+            }
 
             ///////////////STOCK////////////////
             Stock Stock = new Stock()
@@ -250,7 +273,7 @@ namespace Backend_Website.Controllers
                 ProductName = ProductDetailsJSON.ProductName,
                 _TypeId = _typeid,//ProductDetailsJSON.TypeId,
                 CategoryId = _categoryId,  //ProductDetailsJSON.CategoryId,
-                CollectionId = ProductDetailsJSON.CollectionId,
+                CollectionId = _collectionId,//ProductDetailsJSON.CollectionId,
                 BrandId = _brandId, //ProductDetailsJSON.BrandId,
                 StockId = Stock.Id, //ProductDetailsJSON.StockId,
                 Id = _context.Products.Select(a => a.Id).Max() + 1,
