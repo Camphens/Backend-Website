@@ -62,7 +62,7 @@ namespace Backend_Website.Controllers
             _context.SaveChanges();
         }
 
-        
+        [Authorize(Policy = "ApiUser")]
         [HttpPut("UpdateTheAddress")]
         public IActionResult Update([FromBody] Address Updated_Address)
         {
@@ -77,6 +77,7 @@ namespace Backend_Website.Controllers
             specific_address.ZipCode = Updated_Address.ZipCode;
             specific_address.HouseNumber = Updated_Address.HouseNumber;
             _context.SaveChanges();
+
             return Ok();
         }
 

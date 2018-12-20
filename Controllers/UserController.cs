@@ -26,8 +26,8 @@ namespace Backend_Website.Controllers
         private readonly WebshopContext _context;
         private readonly ClaimsPrincipal _caller;
         public UserController(WebshopContext context, IHttpContextAccessor httpContextAccessor){
-            _context = context;
-            _caller = httpContextAccessor.HttpContext.User;}
+            _context    = context;
+            _caller     = httpContextAccessor.HttpContext.User;}
         
 
         [AllowAnonymous]
@@ -104,15 +104,17 @@ namespace Backend_Website.Controllers
 
                         if(isvalid.Result){
                             userInfo[propertyName] = userDetails[propertyName];
-                            Console.WriteLine("\nPropery Value: {0}", userInfo[propertyName]);}
+                            //Console.WriteLine("\nPropery Value: {0}", userInfo[propertyName]);
+                            }
                     }
                     
                     else{
                         userInfo[propertyName] = userDetails[propertyName];
-                        Console.WriteLine("\nPropery Value: {0}", userInfo[propertyName]);}
+                        //Console.WriteLine("\nPropery Value: {0}", userInfo[propertyName]);
+                        }
                     
                     count++;
-                    Console.WriteLine("Count: {0}", count);
+                    //Console.WriteLine("Count: {0}", count);
                     _context.Users.Update(userInfo);
                 }
             };
