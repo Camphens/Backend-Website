@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
 
 namespace Backend_Website.Controllers
 {
@@ -39,6 +40,13 @@ namespace Backend_Website.Controllers
             public int totalpages { get; set; }
             public int totalitems { get; set; }
             public Complete_Product[] products { get; set; }
+        }
+
+        public class FiltersPage
+        {
+            public List<dynamic> FiltersList {get;set;}
+            public PaginationPage page {get;set;}
+            
         }
 
         public class SearchProduct
@@ -313,6 +321,24 @@ namespace Backend_Website.Controllers
         {
             IQueryable<Complete_Product> res = null;
             var result = _context.Products.Select(m => m);
+            
+            List<dynamic> FiltersList = new List<dynamic>();
+            foreach (string item in ProductColor){
+            var LProductColor = (from p in _context.Products where p.ProductColor == item group p by p.ProductColor into Color select new {Productcolor = Color.First().ProductColor});
+            FiltersList.Add(LProductColor);}
+            foreach (int item in BrandId){
+            var LBrandName = from b in _context.Brands where b.Id == item group b by b.BrandName into BrandName select new {Brandname = BrandName.First().BrandName};
+            FiltersList.Add(LBrandName);}
+            foreach (int item in _TypeId){
+            var LTypeName = from t in _context.Types where t.Id == item group t by t._TypeName into TypeName select new {Typename = TypeName.First()._TypeName};
+            FiltersList.Add(LTypeName);}
+            foreach (int item in CategoryId){
+            var LCategoryName = from cat in _context.Categories where cat.Id == item group cat by cat.CategoryName into CategoryName select new {Categoryname = CategoryName.First().CategoryName};
+            FiltersList.Add(LCategoryName);}
+            foreach (int item in CollectionId){
+            var LCollectionName = from c in _context.Collections where c.Id == item group c by c.CollectionName into CollectionName select new {Collectionname = CollectionName.First().CollectionName};
+            FiltersList.Add(LCollectionName);}
+            
             if (BrandId.Length != 0)
             {
                 result = result.Where(m => BrandId.Contains(m.BrandId));
@@ -324,9 +350,8 @@ namespace Backend_Website.Controllers
                       let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
                       let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
                       select new Complete_Product() { Product = p, Images = image, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock };
-
-
             }
+
             if (ProductColor.Length != 0)
             {
                 result = result.Where(m => ProductColor.Contains(m.ProductColor));
@@ -339,6 +364,7 @@ namespace Backend_Website.Controllers
                       let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
                       select new Complete_Product() { Product = p, Images = image, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock };
             }
+
             if (_TypeId.Length != 0)
             {
                 result = result.Where(m => _TypeId.Contains(m._TypeId));
@@ -351,6 +377,7 @@ namespace Backend_Website.Controllers
                       let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
                       select new Complete_Product() { Product = p, Images = image, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock };
             }
+            
             if (CategoryId.Length != 0)
             {
                 result = result.Where(m => CategoryId.Contains(m.CategoryId));
@@ -361,8 +388,9 @@ namespace Backend_Website.Controllers
                       let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
                       let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
                       let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
-                      select new Complete_Product() { Product = p, Images = image, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock };
+                      select new Complete_Product() { Product = p, Images = image, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock };           
             }
+
             if (CollectionId.Length != 0)
             {
                 result = result.Where(m => CollectionId.Contains(m.CollectionId));
@@ -373,21 +401,22 @@ namespace Backend_Website.Controllers
                       let collection = (from c in _context.Collections where p.CollectionId == c.Id select c.CollectionName)
                       let brand = (from b in _context.Brands where p.BrandId == b.Id select b.BrandName)
                       let stock = (from s in _context.Stock where p.StockId == s.Id select s.ProductQuantity)
-                      select new Complete_Product() { Product = p, Images = image, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock };
+                      select new Complete_Product() { Product = p, Images = image, Type = type, Category = category, Collection = collection, Brand = brand, Stock = stock };            
             }
 
             int totalitems = res.Count();
             int totalpages = totalitems / page_size;
             //totalpages+1 because the first page is 1 and not 0
             totalpages = totalpages + 1;
-            string Error = "No product that fullfill these filters";
-            if (res.Count() < 1 | page_index < 1) return Ok(Error);
+            // string Error = "No product that fullfill these filters";
+            // if (res.Count() < 1 | page_index < 1) return Ok(Error);
             //page_index-1 so the first page is 1 and not 0
             page_index = page_index - 1;
             int skip = page_index * page_size;
             res = res.Skip(skip).Take(page_size);
-            PaginationPage page = new PaginationPage { totalpages = totalpages, totalitems = totalitems, products = res.ToArray() };
-            return Ok(page);
+            PaginationPage page = new PaginationPage {totalpages = totalpages, totalitems = totalitems, products = res.ToArray() };
+            FiltersPage filterpage = new FiltersPage {FiltersList = FiltersList, page = page};
+            return Ok(filterpage);
         }
 
         // PUT api/product/5
