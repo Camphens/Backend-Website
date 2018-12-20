@@ -358,10 +358,13 @@ namespace Backend_Website.Controllers
             var stockid = (_context.Stock.Where(s => s.Product.Id == _cartItem.ProductId).Select(p => p.Id)).ToArray().First();
             var stock = _context.Stock.Find(stockid);
             stock.ProductQuantity = stock.ProductQuantity + cartItem[0].CartQuantity;
-
-
+            var cartId = (from item in _context.Users
+                          where item.Id == int.Parse(userId.Value)
+                          select item.Cart.Id).ToArray();
+            
             _context.Stock.Update(stock);
             _context.CartProducts.Remove(cartItem[0]);
+            TotalPrice(cartId[0]);
             _context.SaveChanges();
 
             return Ok();
