@@ -135,28 +135,7 @@ namespace Backend_Website.Controllers
             return Ok(page);
         }
 
-        // Creating new Product - +1 bij StockId, ProductId en ImageId - In Postman:
-        // {"ProductName": "Testingtesting",
-        // "TypeId":5,
-        // "BrandId":100,
-        // "CategoryId":20,
-        // "CollectionId":5,
-        // "StockId":4004,
-        // "ProductId":6014,
-        // "ProductNumber":"",
-        // "ProductEAN":"",
-        // "ProductInfo":"",
-        // "ProductDescription":"",
-        // "ProductSpecification":"",
-        // "ProductPrice":50.00,
-        // "ProductColor":"",
-        // "CategoryName":"TEST",
-        // "ImageURL":"",
-        // "ImageId":15005,
-        // "Stock":2,
-        // "BrandName":"TEST"
-        // }
-        //[Authorize(Policy = "_IsAdmin")]
+        [Authorize(Policy = "_IsAdmin")]
         [HttpPost("create")]
         public void CreateProduct(dynamic ProductDetails)
         {
@@ -453,8 +432,11 @@ namespace Backend_Website.Controllers
         {
             //Find all products that has the given id in table Products
             Product Product = _context.Products.Find(id);
+            Stock Stock = _context.Stock.Find(id);
+
             //Delete the found products and save
             _context.Products.Remove(Product);
+            _context.Stock.Remove(Stock);
             _context.SaveChanges();
         }
 
