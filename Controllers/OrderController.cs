@@ -169,7 +169,7 @@ namespace Backend_Website.Controllers
         [HttpGet]
         public ActionResult getOrder()
         {
-        var Id = int.Parse((_caller.Claims.Single(c => c.Type == "id")).Value);
+            var Id = int.Parse((_caller.Claims.Single(c => c.Type == "id")).Value);
         
             var orders = (from o in _context.Orders
                             where o.UserId == Id
@@ -224,7 +224,69 @@ namespace Backend_Website.Controllers
             return Ok(orders);
         }
 
-        //[HttpGet]
+        [HttpGet("Specific={Id}")]
+        public ActionResult getOrderwithId(int Id)
+        {
+            var userId = int.Parse((_caller.Claims.Single(c => c.Type == "id")).Value);
+            var exists = _context.Orders.Where(x => x.Id == Id && x.UserId == userId).Select(x => x).ToArray();
+            Console.WriteLine("this is the length of the array: " + exists.Length);
+            if (exists.Length == 1)
+            {
+                var orders = (from o in _context.Orders
+                                where o.Id == Id
+                                let o_i = (from entry in _context.OrderProduct
+                                            where entry.OrderId == o.Id
+                                            select new
+                                            {
+                                                product = new 
+                                                {
+                                                    id = entry.Product.Id,
+                                                    productNumber           = entry.Product.ProductNumber,
+                                                    productName             = entry.Product.ProductName,
+                                                    productEAN              = entry.Product.ProductEAN,
+                                                    productInfo             = entry.Product.ProductInfo,
+                                                    productDescription      = entry.Product.ProductDescription,
+                                                    productSpecification    = entry.Product.ProductSpecification,
+                                                    ProductPrice            = entry.Product.ProductPrice,
+                                                    productColor            = entry.Product.ProductColor,
+                                                    Images                  = entry.Product.ProductImages.OrderBy(i => i.ImageURL).FirstOrDefault().ImageURL,
+                                                    Type                    = entry.Product._Type._TypeName,
+                                                    Category                = entry.Product.Category.CategoryName,
+                                                    Collection              = entry.Product.Collection.CollectionName,
+                                                    Brand                   = entry.Product.Brand.BrandName,
+                                                    Stock                   = entry.Product.Stock.ProductQuantity,
+                                                    itemsInOrder            = entry.OrderQuantity
+                                                }        
+                                            })
+                                select new 
+                                {
+                                    Orders = new 
+                                    {
+                                        id              = o.Id,
+                                        userId          = o.UserId,
+                                        userFirstName   = o.User.FirstName,
+                                        userLastName    = o.User.LastName,
+                                        userEmail       = o.User.EmailAddress,
+
+                                        addressId       = o.AddressId,
+                                        adressStreet    = o.Address.Street,
+                                        adressCity      = o.Address.City,
+                                        adressNumber    = o.Address.HouseNumber,
+                                        adressZip       = o.Address.ZipCode,
+
+                                        orderStatusId   = o.OrderStatusId,
+                                        orderStatus     = o.OrderStatus.OrderDescription,
+
+                                        orderTotalPrice = o.OrderTotalPrice,
+                                        orderPayment    = o.OrderPaymentMethod,
+                                        orderDate       = o.OrderDate,
+                                        products        = o_i
+                                    }
+                                }).ToArray();
+                return Ok(orders.FirstOrDefault());
+            }
+            return NotFound();
+        }
 
         [AllowAnonymous]
         [HttpPost]
