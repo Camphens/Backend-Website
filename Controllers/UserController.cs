@@ -34,6 +34,7 @@ namespace Backend_Website.Controllers
             dynamic UserDetailsJson = JsonConvert.DeserializeObject(UserDetails.ToString());
 
             User user = new User(){
+                Id              = _context.Users.Select(a => a.Id).Max() + 1,
                 UserPassword    = UserDetailsJson.UserPassword,
                 FirstName       = UserDetailsJson.FirstName,
                 LastName        = UserDetailsJson.LastName,
