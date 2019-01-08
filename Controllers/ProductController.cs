@@ -440,6 +440,39 @@ namespace Backend_Website.Controllers
             _context.SaveChanges();
         }
 
+        //GET api/product/stat1
+        //Producten die 'out of stock'/uitverkocht zijn
+        [HttpGet("stat1")]
+        public IActionResult Stat1()
+        {
+            var res = (from p in _context.Products from s in _context.Stock where p.StockId == s.Id && s.ProductQuantity < 1 orderby s.ProductQuantity select new {p.Id, p.ProductNumber, p.ProductName, s.ProductQuantity});
+            return Ok(res);
+        }
+
+        //Aantal users
+        [HttpGet("stat2")]
+        public IActionResult Stat2()
+        {
+            var res = (from u in _context.Users select u).Count();
+            return Ok(res);
+        }
+
+        //Totale inkomsten
+        [HttpGet("stat3")]
+        public IActionResult Stat3()
+        {
+            var res = (from o in _context.Orders select o.OrderTotalPrice).Sum();
+            return Ok(res);
+        }
+
+        //De 10 duurste producten uit de shop
+        [HttpGet("stat4")]
+        public IActionResult Stat4()
+        {
+            var res = (from p in _context.Products orderby p.ProductPrice descending select new {p.Id, p.ProductNumber, p.ProductName, Price = p.ProductPrice/100}).Take(10);
+            return Ok(res);
+        }
+
         [HttpGet("search/{page_index}/{page_size}/{searchstring}")]
         public IActionResult Search(int page_index, int page_size, string searchstring)
         {
