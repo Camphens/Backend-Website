@@ -611,7 +611,7 @@ namespace Backend_Website.Controllers
             return NotFound();
         }
 
-        [HttpGet("Order={Id}")]
+        [HttpGet("Orders={Id}")]
         public ActionResult AdminGetUserOrder(int Id)
         {
             if (_context.Orders.Find(Id) != null)
