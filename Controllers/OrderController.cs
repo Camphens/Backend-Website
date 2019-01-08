@@ -11,6 +11,7 @@ using System.Security.Claims;
 
 namespace Backend_Website.Controllers
 {
+    [Authorize(Policy = "ApiUser")]
     [Route("api/[controller]")]
     [ApiController]
     public class OrderController : Controller
@@ -56,38 +57,8 @@ namespace Backend_Website.Controllers
             return new OkObjectResult(specific_order);
         }
 
-        // [HttpPost("MakeOrder")]
-        // public void MakeOrder(dynamic Orderdetails)
-        // {
-        //     dynamic OrderdetailsJSON = JsonConvert.DeserializeObject(Orderdetails.ToString());
-        //     OrderStatus Status = new OrderStatus()
-        //     {
-        //         OrderDescription = "Pending"
-        //     };
-        //     _context.OrderStatus.Add(Status);
-
-        //     Order Order = new Order()
-        //     {
-        //         UserId = OrderdetailsJSON.userID,
-        //         AddressId = OrderdetailsJSON.AddressID,
-        //         OrderStatusId = Status.Id
-        //     };
-        //     _context.Orders.Add(Order);
-
-        //     foreach (var item in OrderdetailsJSON.productIDs)
-        //     {
-        //         OrderProduct product = new OrderProduct()
-        //         {
-        //             OrderId = Order.Id,
-        //             ProductId = item
-        //         };
-        //         _context.OrderProduct.Add(product);
-        //     }
-        //     _context.SaveChanges();
-        // }
-
         [Authorize(Policy = "ApiUser")]
-        [HttpPost]
+        [HttpPost("create")]
         public void CreateOrder(dynamic UserAddress)
         {
             dynamic AddressJson = JsonConvert.DeserializeObject(UserAddress.ToString());
@@ -189,6 +160,116 @@ namespace Backend_Website.Controllers
 
         }
 
+
+
+
+        /////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////
+
+        //[HttpGet]
+
+        //[HttpGet]
+
+        [AllowAnonymous]
+        [HttpPost]
+        public ActionResult Order(dynamic OrderDetailsJson)
+        {
+            dynamic OrderDetails = JsonConvert.DeserializeObject(OrderDetailsJson.ToString());
+
+            int?    userId;
+            int     addressId;
+            double  totalPrice;
+            string  orderPaymentMethod = OrderDetails.OrderPaymentMethod;
+
+            if(_caller.HasClaim(claim => claim.Type == "id"))
+            {
+                userId = int.Parse((_caller.Claims.Single(claim => claim.Type == "id")).Value);
+
+                addressId = (from item in _context.UserAddress
+                            where item.UserId == userId
+                            select item.AddressId).ToArray().FirstOrDefault();
+
+                var cartItems   = (from cart in _context.Carts
+                                    where cart.UserId   == userId
+                                    let cartentry       =   (from entries in _context.CartProducts
+                                                            where entries.CartId == cart.Id
+                                                            select entries)
+                                    select cartentry).ToArray().First();
+
+                totalPrice      = (from cart in _context.Carts
+                                    where cart.UserId   == userId
+                                    select cart.CartTotalPrice).ToArray().First();
+
+                var o = new Order
+                {
+                    UserId          = userId,
+                    AddressId       = addressId,
+                    OrderStatusId   = 1,
+                    OrderTotalPrice = totalPrice,
+                    OrderPaymentMethod = orderPaymentMethod,
+                    OrderDate       = DateTime.Now
+                };
+                _context.Orders.Add(o);
+
+
+                foreach (var item in cartItems)
+                {
+                    var orderproduct = new OrderProduct
+                    {
+                        OrderId         = o.Id,
+                        ProductId       = item.ProductId,
+                        OrderQuantity   = item.CartQuantity
+                    };
+                    _context.OrderProduct.Add(orderproduct);
+                    _context.CartProducts.Remove(item);
+                }
+            }
+
+            else
+            {
+                userId = null;
+
+                Address addressUser = new Address
+                {
+                    Id          = _context.Addresses.Select(a => a.Id).Max() + 1,
+                    Street      = OrderDetails.Street,
+                    City        = OrderDetails.City,
+                    ZipCode     = OrderDetails.ZipCode,
+                    HouseNumber = OrderDetails.HouseNumber
+                };
+                _context.Addresses.Add(addressUser);
+
+                addressId       = addressUser.Id;
+                totalPrice      = OrderDetails.totalPrice;
+                var cartItems   = OrderDetails.cartItems;
+
+                var o = new Order
+                {
+                    UserId          = userId,
+                    AddressId       = addressId,
+                    OrderStatusId   = 1,
+                    OrderTotalPrice = totalPrice,
+                    OrderDate       = DateTime.Now,
+                    OrderPaymentMethod = orderPaymentMethod,
+                };
+                _context.Orders.Add(o);
+
+
+                foreach (var item in cartItems)
+                {
+                    var orderproduct = new OrderProduct
+                    {
+                        OrderId         = o.Id,
+                        ProductId       = item.ProductId,
+                        OrderQuantity   = item.CartQuantity
+                    };
+                    _context.OrderProduct.Add(orderproduct);
+                }
+            }
+            
+            _context.SaveChanges();
+            return Ok();
+        }
 
     }
 }

@@ -119,7 +119,6 @@ namespace Backend_Website.Controllers
             _context.SaveChanges();
         }
 
-
         [HttpDelete("DeleteProductFromCart/{Given_CartId}/{Given_ProductId}")]
         public ActionResult DeleteProductFromCart(int Given_CartId, int Given_ProductId)
         {
@@ -136,19 +135,6 @@ namespace Backend_Website.Controllers
             return Ok(product_in_cart);
         }
 
-        //[HttpPost("CalculatePrice/{given_cartid}")]
-        public void TotalPrice(int given_cartid)
-        {
-            var Sum_of_cartproducts = (from cartproducts in _context.CartProducts
-                                          where cartproducts.CartId == given_cartid
-                                          select cartproducts.CartQuantity *
-                                          cartproducts.Product.ProductPrice).Sum();
-
-            var search_cart = _context.Carts.Find(given_cartid);
-            search_cart.CartTotalPrice = Sum_of_cartproducts;
-            _context.SaveChanges();
-        }
-
         //[HttpGet("RetrievePrice/{given_cartid}")]
         public IActionResult RetrievePrice(int given_cartid)
         {
@@ -161,8 +147,8 @@ namespace Backend_Website.Controllers
 
 
         /////////////////////////////////////////////////////////////////////////////////
+        // User
         /////////////////////////////////////////////////////////////////////////////////
-
 
         [HttpGet]
         public ActionResult GetCartItems()
@@ -175,29 +161,26 @@ namespace Backend_Website.Controllers
                                              where cart.Id == entry.CartId
                                              select new
                                              {
-                                                 product = new
-                                                 {
-                                                     id                     = entry.Product.Id,
-                                                     productNumber          = entry.Product.ProductNumber,
-                                                     productName            = entry.Product.ProductName,
-                                                     productEAN             = entry.Product.ProductEAN,
-                                                     productInfo            = entry.Product.ProductInfo,
-                                                     productDescription     = entry.Product.ProductDescription,
-                                                     productSpecification   = entry.Product.ProductSpecification,
-                                                     ProductPrice           = entry.Product.ProductPrice,
-                                                     productColor           = entry.Product.ProductColor,
-                                                     Images                 = entry.Product.ProductImages.OrderBy(i => i.ImageURL).FirstOrDefault().ImageURL,
-                                                     Type                   = entry.Product._Type._TypeName,
-                                                     Category               = entry.Product.Category.CategoryName,
-                                                     Collection             = entry.Product.Collection.CollectionName,
-                                                     Brand                  = entry.Product.Brand.BrandName,
-                                                     Stock                  = entry.Product.Stock.ProductQuantity,
-                                                     itemsInCart            = entry.CartQuantity
-                                                 }
+                                                product = new
+                                                {
+                                                    id                     = entry.Product.Id,
+                                                    productNumber          = entry.Product.ProductNumber,
+                                                    productName            = entry.Product.ProductName,
+                                                    productEAN             = entry.Product.ProductEAN,
+                                                    productInfo            = entry.Product.ProductInfo,
+                                                    productDescription     = entry.Product.ProductDescription,
+                                                    productSpecification   = entry.Product.ProductSpecification,
+                                                    ProductPrice           = entry.Product.ProductPrice,
+                                                    productColor           = entry.Product.ProductColor,
+                                                    Images                 = entry.Product.ProductImages.OrderBy(i => i.ImageURL).FirstOrDefault().ImageURL,
+                                                    Type                   = entry.Product._Type._TypeName,
+                                                    Category               = entry.Product.Category.CategoryName,
+                                                    Collection             = entry.Product.Collection.CollectionName,
+                                                    Brand                  = entry.Product.Brand.BrandName,
+                                                    Stock                  = entry.Product.Stock.ProductQuantity,
+                                                    itemsInCart            = entry.CartQuantity
+                                                }
                                              }
-                            // let cartTotal = (from item in _context.CartProducts
-                            //                  where cart.Id == item.CartId
-                            //                  select (item.Product.ProductPrice * item.CartQuantity)).Sum()
                             let cartTotal = (from item in _context.Carts
                                              where cart.Id == item.Id
                                              select item.CartTotalPrice)
@@ -253,11 +236,12 @@ namespace Backend_Website.Controllers
                 stock.ProductQuantity = stock.ProductQuantity + oldQuantity - _cartItem.CartQuantity;
             }
             
-            TotalPrice(cartItem[0].CartId);
 
             _context.Update(stock);
             _context.CartProducts.Update(cartItem[0]);
             _context.SaveChanges();
+
+            TotalPrice(cartItem[0].CartId);
 
             return Ok();
         }
@@ -316,12 +300,11 @@ namespace Backend_Website.Controllers
                 CartDateAdded = DateTime.Now
             };
 
-            TotalPrice(cartId[0]);
-
             _context.Add(product);
             _context.Stock.Update(stock);
             _context.SaveChanges();
 
+            TotalPrice(cartId[0]);
 
             return Ok();
         }
@@ -345,10 +328,13 @@ namespace Backend_Website.Controllers
                 return BadRequest(ModelState);
             }
 
-            var userId = _caller.Claims.Single(c => c.Type == "id");
-            var cartItem = (from item in _context.CartProducts
-                            where item.Cart.UserId == int.Parse(userId.Value) && item.ProductId == _cartItem.ProductId
-                            select item).ToArray();
+            var userId      = _caller.Claims.Single(c => c.Type == "id");
+            var cartItem    = (from item in _context.CartProducts
+                                where item.Cart.UserId == int.Parse(userId.Value) && item.ProductId == _cartItem.ProductId
+                                select item).ToArray();
+            var cartId      = (from item in _context.Users
+                                where item.Id == int.Parse(userId.Value)
+                                select item.Cart.Id).ToArray();
 
             if (cartItem.Length == 0)
             {
@@ -356,19 +342,40 @@ namespace Backend_Website.Controllers
             }
 
             var stockid = (_context.Stock.Where(s => s.Product.Id == _cartItem.ProductId).Select(p => p.Id)).ToArray().First();
-            var stock = _context.Stock.Find(stockid);
+            var stock   = _context.Stock.Find(stockid);
             stock.ProductQuantity = stock.ProductQuantity + cartItem[0].CartQuantity;
-            var cartId = (from item in _context.Users
-                          where item.Id == int.Parse(userId.Value)
-                          select item.Cart.Id).ToArray();
             
             _context.Stock.Update(stock);
             _context.CartProducts.Remove(cartItem[0]);
-            TotalPrice(cartId[0]);
             _context.SaveChanges();
+
+            TotalPrice(cartId[0]);
 
             return Ok();
         }
 
+
+        public void TotalPrice(int cartId)
+        {
+            // var Sum_of_cartproducts = (from cartproducts in _context.CartProducts
+            //                             where cartproducts.CartId == given_cartid
+            //                             select cartproducts.CartQuantity *
+            //                             cartproducts.Product.ProductPrice).Sum();
+            
+            // Console.WriteLine("this is the sum of cartproducts: " + Sum_of_cartproducts);
+            // var search_cart = _context.Carts.Find(given_cartid);
+            // search_cart.CartTotalPrice = Sum_of_cartproducts;
+            // _context.SaveChanges();
+
+            var totalPrice  = (from item in _context.CartProducts
+                                where cartId == item.CartId
+                                select (item.Product.ProductPrice * item.CartQuantity)).Sum();
+            
+            var cart        = _context.Carts.Find(cartId);
+            cart.CartTotalPrice = totalPrice;
+            _context.Carts.Update(cart);
+            _context.SaveChanges();
+        }
+        
     }
 }

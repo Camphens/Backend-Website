@@ -8,7 +8,7 @@ namespace Backend_Website.ViewModels.Validations
         public CartViewModelValidator()
         {
             RuleFor(vm => vm.ProductId).NotEmpty().NotNull().GreaterThan(0).WithMessage("ProductId moet meegegeven worden");
-            RuleFor(vm => vm.CartQuantity).GreaterThanOrEqualTo(0);
+            RuleFor(vm => vm.CartQuantity).GreaterThan(0);
         }
     }
 

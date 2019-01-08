@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 
 namespace Backend_Website.Controllers
 {
+    [Authorize(Policy = "ApiUser")]
     [Route("api/[controller]")]
     [ApiController]
     public class AddressController : Controller
@@ -38,7 +39,6 @@ namespace Backend_Website.Controllers
             return Ok(address);
         }
 
-        [Authorize(Policy = "ApiUser")]
         [HttpPost("MakeAnAddress")]
         public void FillinAdress([FromBody]Address address)
         {
@@ -62,7 +62,6 @@ namespace Backend_Website.Controllers
             _context.SaveChanges();
         }
 
-        [Authorize(Policy = "ApiUser")]
         [HttpPut("UpdateTheAddress")]
         public IActionResult Update([FromBody] Address Updated_Address)
         {
@@ -72,16 +71,15 @@ namespace Backend_Website.Controllers
                 return NotFound();
             }
             //else:
-            specific_address.Street = Updated_Address.Street;
-            specific_address.City = Updated_Address.City;
-            specific_address.ZipCode = Updated_Address.ZipCode;
-            specific_address.HouseNumber = Updated_Address.HouseNumber;
+            specific_address.Street         = Updated_Address.Street;
+            specific_address.City           = Updated_Address.City;
+            specific_address.ZipCode        = Updated_Address.ZipCode;
+            specific_address.HouseNumber    = Updated_Address.HouseNumber;
             _context.SaveChanges();
 
             return Ok();
         }
 
-        [Authorize(Policy = "ApiUser")]
         [HttpDelete("DeleteAddress")]
         public IActionResult DeleteAddress(dynamic address_id_)
         {
@@ -101,6 +99,52 @@ namespace Backend_Website.Controllers
             _context.Addresses.Remove(adress_in_address_table);
             _context.SaveChanges();
             return Ok();
+        }
+    
+    
+
+
+        /////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////
+        
+        [HttpGet]
+        public ActionResult RetrieveAddress()
+        {
+            var userid  = (_caller.Claims.Single(claim => claim.Type == "id"));
+            var address = (from addresses in _context.UserAddress
+                           where addresses.UserId == int.Parse(userid.Value)
+                           select addresses.Addresses).ToArray();
+
+            if( address.Length == 0)
+            {
+                return NotFound();
+            }
+            return Ok(address.FirstOrDefault());
+        }
+
+        [HttpPut]
+        public ActionResult EditAddress([FromBody]Address addressUpdated)
+        {
+            var userid  = (_caller.Claims.Single(claim => claim.Type == "id"));
+            var address = (from addresses in _context.UserAddress
+                           where addresses.UserId == int.Parse(userid.Value)
+                           select addresses.Addresses).ToArray();
+            
+            if( address.Length != 0)
+            {
+                var addressUser = address.FirstOrDefault();
+
+                addressUser.Street      = addressUpdated.Street;
+                addressUser.City        = addressUpdated.City;
+                addressUser.ZipCode     = addressUpdated.ZipCode;
+                addressUser.HouseNumber = addressUpdated.HouseNumber;
+
+                _context.SaveChanges();
+
+                return Ok();
+            }
+
+            return NotFound();
         }
     }
 }

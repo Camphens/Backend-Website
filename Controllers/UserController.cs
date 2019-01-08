@@ -7,8 +7,6 @@ using Microsoft.AspNetCore.Authorization;
 using Backend_Website.Models;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
-using System.Net.Mail;
-using DnsClient;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using Backend_Website.ViewModels;
@@ -44,7 +42,7 @@ namespace Backend_Website.Controllers
                 EmailAddress    = UserDetailsJson.EmailAddress,
                 PhoneNumber     = UserDetailsJson.PhoneNumber};
 
-            var isvalid = IsValidAsync((UserDetailsJson.EmailAddress).ToString());
+            var isvalid = Utils.IsValidAsync((UserDetailsJson.EmailAddress).ToString());
             isvalid.Wait();
 
             if (!isvalid.Result){
@@ -60,8 +58,23 @@ namespace Backend_Website.Controllers
             Wishlist userwishlist = new Wishlist(){
                 UserId          = user.Id};
             _context.Wishlists.Add(userwishlist);
-            await _context.SaveChangesAsync();
 
+            Address addressDetails = new Address(){
+                Id          = _context.Addresses.Select(a => a.Id).Max() + 1,
+                Street      = UserDetailsJson.Street,
+                City        = UserDetailsJson.City,
+                ZipCode     = UserDetailsJson.ZipCode,
+                HouseNumber = UserDetailsJson.HouseNumber
+            };
+            _context.Addresses.Add(addressDetails);
+
+            UserAddress addressUser = new UserAddress(){
+                UserId      = user.Id,
+                AddressId   = addressDetails.Id
+            };
+            _context.UserAddress.Add(addressUser);
+
+            await _context.SaveChangesAsync();
             return new OkObjectResult("Registratie Voltooid"); 
         }
 
@@ -81,13 +94,14 @@ namespace Backend_Website.Controllers
             UserDetailsViewModelValidator validator             = new UserDetailsViewModelValidator();
             FluentValidation.Results.ValidationResult results   = validator.Validate(userDetails);
 
+            foreach(var failure in results.Errors)
+            {
+                Errors.AddErrorToModelState(failure.PropertyName, failure.ErrorMessage, ModelState);
+            }
+
             if(!ModelState.IsValid){
                 return BadRequest();
             }
-
-            foreach(var failure in results.Errors){
-                    Errors.AddErrorToModelState(failure.PropertyName, failure.ErrorMessage, ModelState);
-                }
 
             var userId      = _caller.Claims.Single(c => c.Type == "id");
             var userInfo    = _context.Users.Find(int.Parse(userId.Value));
@@ -98,59 +112,40 @@ namespace Backend_Website.Controllers
             for(var element = 0; element < type.GetProperties().Count() - 1; element++){
                 string propertyName = type.GetProperties().ElementAt(element).Name;
             
-                if(userDetails[propertyName] != null && userDetails[propertyName].ToString() != "" && userDetails[propertyName].ToString() != _context.Users.Where(b => int.Parse(userId.Value) == b.Id).Select(a => a[propertyName]).ToArray()[0].ToString()){
-                    if(propertyName == "EmailAddress"){
-                        isvalid = IsValidAsync(userDetails[propertyName].ToString());
+                if(userDetails[propertyName] != null)
+                {
+                    if(userDetails[propertyName].ToString() != "")
+                    {
+                        bool isnull = _context.Users.Where(b => int.Parse(userId.Value) == b.Id && b[propertyName] == null).Select(a => a).ToArray().Length == 1 ? true : false;
+                        if(isnull || userDetails[propertyName].ToString() != _context.Users.Where(b => int.Parse(userId.Value) == b.Id).Select(a => a[propertyName]).ToArray()[0].ToString())
+                        {
+                            if(propertyName == "EmailAddress"){
+                                isvalid = Utils.IsValidAsync(userDetails[propertyName].ToString());
 
-                        if(isvalid.Result){
-                            userInfo[propertyName] = userDetails[propertyName];
-                            //Console.WriteLine("\nPropery Value: {0}", userInfo[propertyName]);
+                                if(isvalid.Result)
+                                {
+                                    userInfo[propertyName] = userDetails[propertyName];
+                                    //Console.WriteLine("\nPropery Value: {0}", userInfo[propertyName]);
+                                }
                             }
-                    }
-                    
-                    else{
-                        userInfo[propertyName] = userDetails[propertyName];
-                        //Console.WriteLine("\nPropery Value: {0}", userInfo[propertyName]);
+                            
+                            else
+                            {
+                                userInfo[propertyName] = userDetails[propertyName];
+                                //Console.WriteLine("\nPropery Value: {0}", userInfo[propertyName]);
+                            }
+                            
+                            count++;
+                            //Console.WriteLine("Count: {0}", count);
+                            _context.Users.Update(userInfo);
                         }
-                    
-                    count++;
-                    //Console.WriteLine("Count: {0}", count);
-                    _context.Users.Update(userInfo);
+                    }
                 }
             };
             _context.SaveChanges();
             return Ok(ModelState);
         }
 
-
-
-
-        Task<bool> IsValidAsync(string email)
-        {
-            try {
-                var mailAddress = new MailAddress(email);
-                var host        = mailAddress.Host;
-                return CheckDnsEntriesAsync(host);}
-            
-            catch (FormatException) {
-                return Task.FromResult(false);}
-        }
-
-        async Task<bool> CheckDnsEntriesAsync(string domain)
-        {
-            try {
-                var lookup      = new LookupClient();
-                lookup.Timeout  = TimeSpan.FromSeconds(5);
-                var result      = await lookup.QueryAsync(domain, QueryType.ANY).ConfigureAwait(false);
-
-                var records = result.Answers.Where(record => record.RecordType == DnsClient.Protocol.ResourceRecordType.A || 
-                                                            record.RecordType == DnsClient.Protocol.ResourceRecordType.AAAA || 
-                                                            record.RecordType == DnsClient.Protocol.ResourceRecordType.MX);
-                return records.Any();}
-
-            catch (DnsResponseException) {
-                return false; }
-        }
     }
 
 }

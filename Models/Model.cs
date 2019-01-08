@@ -394,6 +394,7 @@ namespace Backend_Website.Models
         public int OrderStatusId {get; set;}
         public OrderStatus OrderStatus {get; set;}
         public double OrderTotalPrice {get; set;}
+        public string OrderPaymentMethod {get; set;}
         public DateTime OrderDate {get; set;}
         public List<OrderProduct> Products {get; set;}
     }
