@@ -401,27 +401,58 @@ namespace Backend_Website.Controllers
         // PUT api/product/5
         [Authorize(Policy = "_IsAdmin")]
         [HttpPut("{id}")]
-        //Gets input from the body that is type Product (in Json)
-        public void UpdateExistingProduct(int id, [FromBody] Product product)
+         public void UpdateProduct(dynamic U_product, int id)
         {
-            //Find all products that have the given id in table Products
+            dynamic U_product_JSON = JsonConvert.DeserializeObject(U_product.ToString());
             Product p = _context.Products.Find(id);
-            //Check if there is any input(value) for the attributes
-            //If there is input, assign the new value to the attribute
-            if (product.ProductNumber != null) { p.ProductNumber = product.ProductNumber; }
-            if (product.ProductEAN != null) { p.ProductEAN = product.ProductEAN; }
-            if (product.ProductInfo != null) { p.ProductInfo = product.ProductInfo; }
-            if (product.ProductDescription != null) { p.ProductDescription = product.ProductDescription; }
-            if (product.ProductSpecification != null) { p.ProductSpecification = product.ProductSpecification; }
-            if (product.ProductPrice != 0) { p.ProductPrice = product.ProductPrice; }
-            if (product.ProductColor != null) { p.ProductColor = product.ProductColor; }
-            if (product._TypeId != 0) { p._TypeId = product._TypeId; }
-            if (product.CategoryId != 0) { p.CategoryId = product.CategoryId; }
-            if (product.CollectionId != 0) { p.CollectionId = product.CollectionId; }
-            if (product.BrandId != 0) { p.BrandId = product.BrandId; }
-            if (product.StockId != 0) { p.StockId = product.StockId; }
-            //Update the changes to the table and save
+            if (U_product_JSON.ProductName != null) { p.ProductEAN = U_product_JSON.ProductName; }
+            if (U_product_JSON.ProductEAN != null) { p.ProductEAN = U_product_JSON.ProductEAN; }
+            if (U_product_JSON.ProductNumber != null) { p.ProductEAN = U_product_JSON.ProductNumber; }
+            if (U_product_JSON.ProductInfo != null) { p.ProductEAN = U_product_JSON.ProductInfo; }
+            if (U_product_JSON.ProductDescription != null) { p.ProductEAN = U_product_JSON.ProductDescription; }
+            if (U_product_JSON.ProductSpecification != null) { p.ProductEAN = U_product_JSON.ProductSpecification; }
+            if (U_product_JSON.ProductPrice != null) { p.ProductEAN = U_product_JSON.ProductPrice; }
+            if (U_product_JSON.ProductColor != null) { p.ProductEAN = U_product_JSON.ProductColor; }
+            if (U_product_JSON._TypeId != null) { p._TypeId = U_product_JSON._TypeId; }
+            if (U_product_JSON.CategoryId != null) { p.CategoryId = U_product_JSON.CategoryId; }
+            if (U_product_JSON.CollectionId != null) { p.CollectionId = U_product_JSON.CollectionId; }
+            if (U_product_JSON.BrandId != null) { p.BrandId = U_product_JSON.BrandId; }
             _context.Update(p);
+            Stock s = _context.Stock.Find(p.StockId);
+            if (U_product_JSON.ProductQuantity != null) { s.ProductQuantity = U_product_JSON.ProductQuantity; }
+            _context.Update(s);
+            if (U_product_JSON._TypeId != null)
+            {
+                int TId = U_product_JSON._TypeId;
+                _Type t = _context.Types.Find(TId);
+                if (U_product_JSON._TypeName != null) { t._TypeName = U_product_JSON._TypeName; }
+                _context.Update(t);
+            }
+            if (U_product_JSON.CollectionId != null)
+            {
+                int CId = U_product_JSON.CollectionId;
+                Collection c = _context.Collections.Find(CId);
+                if (U_product_JSON.CollectionName != null) { c.CollectionName = U_product_JSON.CollectionName; }
+                _context.Update(c);
+            }
+            if (U_product_JSON.CategoryId != null)
+            {
+                int CatId = U_product_JSON.CategoryId;
+                Category cat = _context.Categories.Find(CatId);
+                if (U_product_JSON.CategoryId != null) { cat.CategoryName = U_product_JSON.CategoryName; }
+                _context.Update(cat);
+            }
+            if (U_product_JSON.BrandId != null)
+            {
+                int BId = U_product_JSON.BrandId;
+                Brand b = _context.Brands.Find(BId);
+                if (U_product_JSON.BrandId != null) { b.BrandName = U_product_JSON.BrandName; }
+                _context.Update(b);
+            }
+            int IId = _context.ProductImages.First(a=>a.ProductId == id).Id;
+            ProductImage i = _context.ProductImages.Find(IId);
+             if (U_product_JSON.ImageURL != null) { i.ImageURL = U_product_JSON.ImageURL; }
+             _context.Update(i);
             _context.SaveChanges();
         }
 
