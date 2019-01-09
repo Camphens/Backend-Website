@@ -473,6 +473,7 @@ namespace Backend_Website.Controllers
 
         //GET api/product/stat1
         //Producten die 'out of stock'/uitverkocht zijn
+        [Authorize(Policy = "_IsAdmin")]
         [HttpGet("stat1")]
         public IActionResult Stat1()
         {
@@ -481,6 +482,7 @@ namespace Backend_Website.Controllers
         }
 
         //Aantal users
+        [Authorize(Policy = "_IsAdmin")]
         [HttpGet("stat2")]
         public IActionResult Stat2()
         {
@@ -489,6 +491,7 @@ namespace Backend_Website.Controllers
         }
 
         //Totale inkomsten
+        [Authorize(Policy = "_IsAdmin")]
         [HttpGet("stat3")]
         public IActionResult Stat3()
         {
@@ -497,6 +500,7 @@ namespace Backend_Website.Controllers
         }
 
         //De 10 duurste producten uit de shop
+        [Authorize(Policy = "_IsAdmin")]
         [HttpGet("stat4")]
         public IActionResult Stat4()
         {
