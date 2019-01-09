@@ -298,6 +298,11 @@ namespace Backend_Website.Controllers
             int     addressId;
             double  totalPrice;
             string  orderPaymentMethod = OrderDetails.OrderPaymentMethod;
+            int     availableOrderId = 1;
+
+            if(_context.Orders.Count() != 0){
+                availableOrderId = _context.Orders.Select(a => a.Id).Max() + 1;
+            }
 
             if(_caller.HasClaim(claim => claim.Type == "id"))
             {
@@ -320,6 +325,7 @@ namespace Backend_Website.Controllers
 
                 var o = new Order
                 {
+                    Id              = availableOrderId,
                     UserId          = userId,
                     AddressId       = addressId,
                     OrderStatusId   = 1,
@@ -360,9 +366,15 @@ namespace Backend_Website.Controllers
                 addressId       = addressUser.Id;
                 totalPrice      = OrderDetails.totalPrice;
                 var cartItems   = OrderDetails.cartItems;
+                int availableAddressId = 1;
+
+                if(_context.Addresses.Count() != 0){
+                    availableAddressId = _context.Addresses.Select(a => a.Id).Max() + 1;
+                }
 
                 var o = new Order
                 {
+                    Id              = availableOrderId,
                     UserId          = userId,
                     AddressId       = addressId,
                     OrderStatusId   = 1,

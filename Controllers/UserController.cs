@@ -32,9 +32,20 @@ namespace Backend_Website.Controllers
         [HttpPost("Registration")]
         public async Task<IActionResult> RegisterUser(dynamic UserDetails){
             dynamic UserDetailsJson = JsonConvert.DeserializeObject(UserDetails.ToString());
+            
+            int availableId = 1;
+            int availableAddressId = 1;
+
+            if(_context.Users.Count() != 0){
+                availableId = _context.Users.Select(a => a.Id).Max() + 1;
+            }
+
+            if(_context.Addresses.Count() != 0){
+                availableAddressId = _context.Addresses.Select(a => a.Id).Max() + 1;
+            }
 
             User user = new User(){
-                Id              = _context.Users.Select(a => a.Id).Max() + 1,
+                Id              = availableId,
                 UserPassword    = UserDetailsJson.UserPassword,
                 FirstName       = UserDetailsJson.FirstName,
                 LastName        = UserDetailsJson.LastName,
@@ -48,7 +59,7 @@ namespace Backend_Website.Controllers
 
             if (!isvalid.Result){
                return new BadRequestObjectResult("Onjuiste Email");}
-            
+
             await _context.Users.AddAsync(user);
             
             Cart usercart = new Cart(){
@@ -61,7 +72,7 @@ namespace Backend_Website.Controllers
             _context.Wishlists.Add(userwishlist);
 
             Address addressDetails = new Address(){
-                Id          = _context.Addresses.Select(a => a.Id).Max() + 1,
+                Id          = availableAddressId,
                 Street      = UserDetailsJson.Street,
                 City        = UserDetailsJson.City,
                 ZipCode     = UserDetailsJson.ZipCode,
