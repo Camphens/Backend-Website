@@ -329,6 +329,17 @@ namespace Backend_Website.Models
         public string HouseNumber {get; set;}
         public List<UserAddress> Users {get; set;}
         public List<Order> Orders {get; set;}
+
+        public object this[string propertyName] {
+        get{
+           Type myType = typeof(Address);                   
+           PropertyInfo myPropInfo = myType.GetProperty(propertyName);
+           return myPropInfo.GetValue(this, null);}
+        set{
+           Type myType = typeof(Address);                   
+           PropertyInfo myPropInfo = myType.GetProperty(propertyName);
+           myPropInfo.SetValue(this, value, null);}
+        }
     }
 
     public class Brand

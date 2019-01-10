@@ -480,25 +480,19 @@ namespace Backend_Website.Controllers
         }
 
         [HttpPut("UserId={Id}")]
-        public ActionResult AdminEditUserInfo([FromBody] UserDetailsViewModel userDetails, int Id)
+        public ActionResult AdminEditUserInfo([FromBody] UserDetailsViewModelAdmin userDetails, int Id)
         {
-            UserDetailsViewModelValidator validator             = new UserDetailsViewModelValidator();
-            FluentValidation.Results.ValidationResult results   = validator.Validate(userDetails);
-
-            foreach(var failure in results.Errors)
-            {
-                Errors.AddErrorToModelState(failure.PropertyName, failure.ErrorMessage, ModelState);
-            }
-
             if(!ModelState.IsValid){
                 return BadRequest();
             }
 
             if (_context.Users.Find(Id) != null)
             {
-                var userInfo    = _context.Users.Find(Id);
-                Type type       = typeof(UserDetailsViewModel);
-                Task<bool> isvalid;
+                var userInfo        = _context.Users.Find(Id);
+                var userAddressId   = _context.UserAddress.Where(x => x.UserId == Id).Select(x => x.Addresses.Id);
+                var userAddress     = _context.Addresses.Find(userAddressId.FirstOrDefault());
+                Type type           = typeof(UserDetailsViewModelAdmin);
+                //Task<bool> isvalid;
                 int count = 0;
                 
                 for(var element = 0; element < type.GetProperties().Count() - 1; element++){
@@ -507,35 +501,32 @@ namespace Backend_Website.Controllers
                     if(userDetails[propertyName] != null)
                     {
                         if(userDetails[propertyName].ToString() != "")
-                        {
-                            bool isnull = _context.Users.Where(b => Id == b.Id && b[propertyName] == null).Select(a => a).ToArray().Length == 1 ? true : false;
-                            if(isnull || userDetails[propertyName].ToString() != _context.Users.Where(b => Id == b.Id).Select(a => a[propertyName]).ToArray()[0].ToString())
-                            {
-                                if(propertyName == "EmailAddress"){
-                                    isvalid = Utils.IsValidAsync(userDetails[propertyName].ToString());
+                        {   
+                            // if(propertyName == "EmailAddress"){
+                            //     isvalid = Utils.IsValidAsync(userDetails[propertyName].ToString());
 
-                                    if(isvalid.Result)
-                                    {
-                                        userInfo[propertyName] = userDetails[propertyName];
-                                        //Console.WriteLine("\nPropery Value: {0}", userInfo[propertyName]);
-                                    }
-                                }
-                                
-                                else
-                                {
-                                    userInfo[propertyName] = userDetails[propertyName];
-                                    //Console.WriteLine("\nPropery Value: {0}", userInfo[propertyName]);
-                                }
-                                
-                                count++;
-                                //Console.WriteLine("Count: {0}", count);
-                                _context.Users.Update(userInfo);
+                            //     if(isvalid.Result)
+                            //     {
+                            //         userInfo[propertyName] = userDetails[propertyName];
+                            //     }
+                            // }
+                            if(propertyName == "Street" || propertyName == "City" || propertyName == "ZipCode" || propertyName == "HouseNumber")
+                            {
+                                userAddress[propertyName] = userDetails[propertyName];
                             }
+
+                            else
+                            {
+                                userInfo[propertyName] = userDetails[propertyName];
+                            }
+                            
+                            count++;
+                            _context.Update(userInfo);  
                         }
                     }
                 };
                 _context.SaveChanges();
-                return Ok(ModelState);
+                return Ok();
             }
             return NotFound();
         }
