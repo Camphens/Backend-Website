@@ -170,7 +170,7 @@ namespace Backend_Website.Controllers
         public ActionResult getOrder()
         {
             var Id = int.Parse((_caller.Claims.Single(c => c.Type == "id")).Value);
-        
+    
             var orders = (from o in _context.Orders
                             where o.UserId == Id
                             let o_i = (from entry in _context.OrderProduct
@@ -194,34 +194,21 @@ namespace Backend_Website.Controllers
                                                 Collection              = entry.Product.Collection.CollectionName,
                                                 Brand                   = entry.Product.Brand.BrandName,
                                                 Stock                   = entry.Product.Stock.ProductQuantity,
-                                                itemsInOrder            = entry.OrderQuantity
+                                                itemsInOrder            = entry.OrderQuantity,
+
+                                                orderStatus             = o.OrderStatus.OrderDescription,
+                                                orderPayment            = o.OrderPaymentMethod,
+                                                orderDate               = o.OrderDate,
+                                                orderid                 = o.Id,
+
+                                                adressStreet    = o.Address.Street,
+                                                adressCity      = o.Address.City,
+                                                adressNumber    = o.Address.HouseNumber,
+                                                adressZip       = o.Address.ZipCode
                                             }        
                                         })
-                            select new {
-                                Order = new
-                                {
-                                    id              = o.Id,
-                                    userId          = o.UserId,
-                                    userFirstName   = o.User.FirstName,
-                                    userLastName    = o.User.LastName,
-                                    userEmail       = o.User.EmailAddress,
-
-                                    addressId       = o.AddressId,
-                                    adressStreet    = o.Address.Street,
-                                    adressCity      = o.Address.City,
-                                    adressNumber    = o.Address.HouseNumber,
-                                    adressZip       = o.Address.ZipCode,
-
-                                    orderStatusId   = o.OrderStatusId,
-                                    orderStatus     = o.OrderStatus.OrderDescription,
-
-                                    orderTotalPrice = o.OrderTotalPrice,
-                                    orderPayment    = o.OrderPaymentMethod,
-                                    orderDate       = o.OrderDate,
-                                    products        = o_i
-                                }
-                                }).ToArray();
-            return Ok(orders);
+                            select new {Products = o_i}).ToArray();
+            return Ok(orders.FirstOrDefault());
         }
 
         [HttpGet("Specific={Id}")]
