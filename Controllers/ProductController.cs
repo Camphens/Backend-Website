@@ -405,14 +405,14 @@ namespace Backend_Website.Controllers
         {
             dynamic U_product_JSON = JsonConvert.DeserializeObject(U_product.ToString());
             Product p = _context.Products.Find(id);
-            if (U_product_JSON.ProductName != null) { p.ProductEAN = U_product_JSON.ProductName; }
+            if (U_product_JSON.ProductName != null) { p.ProductName = U_product_JSON.ProductName; }
             if (U_product_JSON.ProductEAN != null) { p.ProductEAN = U_product_JSON.ProductEAN; }
-            if (U_product_JSON.ProductNumber != null) { p.ProductEAN = U_product_JSON.ProductNumber; }
-            if (U_product_JSON.ProductInfo != null) { p.ProductEAN = U_product_JSON.ProductInfo; }
-            if (U_product_JSON.ProductDescription != null) { p.ProductEAN = U_product_JSON.ProductDescription; }
-            if (U_product_JSON.ProductSpecification != null) { p.ProductEAN = U_product_JSON.ProductSpecification; }
-            if (U_product_JSON.ProductPrice != null) { p.ProductEAN = U_product_JSON.ProductPrice; }
-            if (U_product_JSON.ProductColor != null) { p.ProductEAN = U_product_JSON.ProductColor; }
+            if (U_product_JSON.ProductNumber != null) { p.ProductNumber = U_product_JSON.ProductNumber; }
+            if (U_product_JSON.ProductInfo != null) { p.ProductInfo = U_product_JSON.ProductInfo; }
+            if (U_product_JSON.ProductDescription != null) { p.ProductDescription = U_product_JSON.ProductDescription; }
+            if (U_product_JSON.ProductSpecification != null) { p.ProductSpecification = U_product_JSON.ProductSpecification; }
+            if (U_product_JSON.ProductPrice != null) { p.ProductPrice = U_product_JSON.ProductPrice; }
+            if (U_product_JSON.ProductColor != null) { p.ProductColor = U_product_JSON.ProductColor; }
             if (U_product_JSON._TypeId != null) { p._TypeId = U_product_JSON._TypeId; }
             if (U_product_JSON.CategoryId != null) { p.CategoryId = U_product_JSON.CategoryId; }
             if (U_product_JSON.CollectionId != null) { p.CollectionId = U_product_JSON.CollectionId; }
