@@ -454,9 +454,26 @@ namespace Backend_Website.Controllers
         {
             if (_context.Users.Find(Id) != null)
             {
-                var UserInfo = (from u in _context.Users
-                                where Id == u.Id
-                                select u).ToArray(); 
+                var UserInfo = (from u in _context.UserAddress
+                                where u.User.Id == Id
+                                select new
+                                {
+                                    userId                  = u.User.Id,
+                                    userFirstName           = u.User.FirstName,
+                                    userLastName            = u.User.LastName,
+                                    userEmail               = u.User.EmailAddress,
+                                    userRole                = u.User.Role,
+                                    userGender              = u.User.Gender,
+                                    userBirth               = u.User.BirthDate,
+                                    userPhone               = u.User.PhoneNumber,
+
+                                    addressId               = u.Addresses.Id,
+                                    adressStreet            = u.Addresses.Street,
+                                    adressCity              = u.Addresses.City,
+                                    adressNumber            = u.Addresses.HouseNumber,
+                                    adressZip               = u.Addresses.ZipCode
+                                            
+                                }).ToArray(); 
                 return Ok(UserInfo);
             }
             return NotFound();
@@ -538,63 +555,107 @@ namespace Backend_Website.Controllers
             return NotFound();
         }
     
-        //Methode voor Get Users "Paged", zoals iemand producten zou krijgen.
         [HttpGet("Users/{page_index}/{page_size}")]
         public ActionResult AdminUsersPaged(int page_index, int page_size)
         {
-                var UserInfo = _context.Users.GetPage<User>(page_index, page_size, a => a.Id);
-                if (UserInfo == null) 
-                {
-                    return NotFound();
-                }
-                return Ok(UserInfo);
+            var res = (from u in _context.Users
+                        orderby u.LastName ascending
+
+                        let u_i = (from entry in _context.UserAddress
+                                        select new
+                                        {
+                                            userId                  = entry.User.Id,
+                                            userFirstName           = entry.User.FirstName,
+                                            userLastName            = entry.User.LastName,
+                                            userEmail               = entry.User.EmailAddress,
+                                            userRole                = entry.User.Role,
+                                            userGender              = entry.User.Gender,
+                                            userBirth               = entry.User.BirthDate,
+                                            userPhone               = entry.User.PhoneNumber,
+
+                                            addressId               = entry.Addresses.Id,
+                                            adressStreet            = entry.Addresses.Street,
+                                            adressCity              = entry.Addresses.City,
+                                            adressNumber            = entry.Addresses.HouseNumber,
+                                            adressZip               = entry.Addresses.ZipCode
+                                                    
+                                        })
+                        select u_i).ToArray(); 
+            
+            if (res == null || page_size == 0) 
+            {
+                return NotFound();
+            }
+
+            int totalitems  = res.Count();
+            int totalpages  = Math.Abs(totalitems / page_size);
+
+            totalpages      = totalpages + 1;
+
+            int skip        = page_index * page_size;
+            var resnew      = res.Skip(skip).Take(page_size).ToArray().FirstOrDefault();
+            var page        = new { totalpages = totalpages, totalitems = totalitems, users = resnew };
+            
+            return Ok(page);
         }
 
         /////////////////////////////////////////////////////////////////////////////////
         // Order
         /////////////////////////////////////////////////////////////////////////////////
 
-        [HttpGet("Orders")]
-        public ActionResult AdminGetOrders()
+        [HttpGet("Orders/{page_index}/{page_size}")]
+        public ActionResult AdminGetOrders(int page_index, int page_size)
         {       
-            var orders = (from o in _context.Orders
+            var res = (from o in _context.Orders
                             let o_i = (from entry in _context.OrderProduct
-                                        orderby entry.Order.OrderDate descending
-                                        select new
+                                        orderby entry.Order.Id descending, entry.ProductId
+                                        
+                                        select new 
                                         {
-                                            product = new 
-                                            {
-                                                id                      = entry.Product.Id,
-                                                productNumber           = entry.Product.ProductNumber,
-                                                productName             = entry.Product.ProductName,
-                                                productEAN              = entry.Product.ProductEAN,
-                                                productInfo             = entry.Product.ProductInfo,
-                                                productDescription      = entry.Product.ProductDescription,
-                                                productSpecification    = entry.Product.ProductSpecification,
-                                                ProductPrice            = entry.Product.ProductPrice,
-                                                productColor            = entry.Product.ProductColor,
-                                                Images                  = entry.Product.ProductImages.OrderBy(i => i.ImageURL).FirstOrDefault().ImageURL,
-                                                Type                    = entry.Product._Type._TypeName,
-                                                Category                = entry.Product.Category.CategoryName,
-                                                Collection              = entry.Product.Collection.CollectionName,
-                                                Brand                   = entry.Product.Brand.BrandName,
-                                                Stock                   = entry.Product.Stock.ProductQuantity,
-                                                itemsInOrder            = entry.OrderQuantity,
+                                            id                      = entry.Product.Id,
+                                            productNumber           = entry.Product.ProductNumber,
+                                            productName             = entry.Product.ProductName,
+                                            productEAN              = entry.Product.ProductEAN,
+                                            productInfo             = entry.Product.ProductInfo,
+                                            productDescription      = entry.Product.ProductDescription,
+                                            productSpecification    = entry.Product.ProductSpecification,
+                                            ProductPrice            = entry.Product.ProductPrice,
+                                            productColor            = entry.Product.ProductColor,
+                                            Images                  = entry.Product.ProductImages.OrderBy(i => i.ImageURL).FirstOrDefault().ImageURL,
+                                            Type                    = entry.Product._Type._TypeName,
+                                            Category                = entry.Product.Category.CategoryName,
+                                            Collection              = entry.Product.Collection.CollectionName,
+                                            Brand                   = entry.Product.Brand.BrandName,
+                                            Stock                   = entry.Product.Stock.ProductQuantity,
+                                            itemsInOrder            = entry.OrderQuantity,
 
-                                                orderStatus             = entry.Order.OrderStatus.OrderDescription,
-                                                orderPayment            = entry.Order.OrderPaymentMethod,
-                                                orderDate               = entry.Order.OrderDate,
-                                                orderid                 = entry.Order.Id,
+                                            orderStatus             = entry.Order.OrderStatus.OrderDescription,
+                                            orderPayment            = entry.Order.OrderPaymentMethod,
+                                            orderDate               = entry.Order.OrderDate,
+                                            orderId                 = entry.Order.Id,
 
-                                                adressStreet            = entry.Order.Address.Street,
-                                                adressCity              = entry.Order.Address.City,
-                                                adressNumber            = entry.Order.Address.HouseNumber,
-                                                adressZip               = entry.Order.Address.ZipCode
-                                            }        
+                                            adressStreet            = entry.Order.Address.Street,
+                                            adressCity              = entry.Order.Address.City,
+                                            adressHouseNumber       = entry.Order.Address.HouseNumber,
+                                            adressZipCode           = entry.Order.Address.ZipCode        
                                         })
-                            select new {Products = o_i}).ToArray();
+                            select o_i).ToArray();
+            
+            if (res == null || page_size == 0) 
+            {
+                return NotFound();
+            }
 
-            return Ok(orders.FirstOrDefault());
+            int totalitems  = res.Count();
+            int totalpages  = Math.Abs(totalitems / page_size);
+
+            totalpages      = totalpages + 1;
+
+            int skip        = page_index * page_size;
+            var resnew      = res.Skip(skip).Take(page_size).ToArray().FirstOrDefault();
+            var page        = new { totalpages = totalpages, totalitems = totalitems, orders = resnew };
+            
+            return Ok(page);
         }
 
         [HttpGet("UserId={Id}/Orders")]
