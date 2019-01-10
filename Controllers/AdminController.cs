@@ -574,10 +574,10 @@ namespace Backend_Website.Controllers
                                             userPhone               = entry.User.PhoneNumber,
 
                                             addressId               = entry.Addresses.Id,
-                                            adressStreet            = entry.Addresses.Street,
-                                            adressCity              = entry.Addresses.City,
-                                            adressNumber            = entry.Addresses.HouseNumber,
-                                            adressZip               = entry.Addresses.ZipCode
+                                            addressStreet            = entry.Addresses.Street,
+                                            addressCity              = entry.Addresses.City,
+                                            addressNumber            = entry.Addresses.HouseNumber,
+                                            addressZip               = entry.Addresses.ZipCode
                                                     
                                         })
                         select u_i).ToArray(); 
@@ -598,6 +598,7 @@ namespace Backend_Website.Controllers
             
             return Ok(page);
         }
+
 
         /////////////////////////////////////////////////////////////////////////////////
         // Order
