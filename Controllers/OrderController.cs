@@ -352,10 +352,14 @@ namespace Backend_Website.Controllers
             else
             {
                 userId = null;
+                int availableAddressId = 1;
+                if(_context.Addresses.Count() != 0){
+                    availableAddressId = _context.Addresses.Select(a => a.Id).Max() + 1;
+                }
 
                 Address addressUser = new Address
                 {
-                    Id          = _context.Addresses.Select(a => a.Id).Max() + 1,
+                    Id          = availableAddressId,
                     Street      = OrderDetails.Street,
                     City        = OrderDetails.City,
                     ZipCode     = OrderDetails.ZipCode,
@@ -366,11 +370,6 @@ namespace Backend_Website.Controllers
                 addressId       = addressUser.Id;
                 totalPrice      = OrderDetails.totalPrice;
                 var cartItems   = OrderDetails.cartItems;
-                int availableAddressId = 1;
-
-                if(_context.Addresses.Count() != 0){
-                    availableAddressId = _context.Addresses.Select(a => a.Id).Max() + 1;
-                }
 
                 var o = new Order
                 {
