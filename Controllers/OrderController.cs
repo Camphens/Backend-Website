@@ -137,19 +137,19 @@ namespace Backend_Website.Controllers
             return Ok(order);
         }
 
-        [HttpPost("CalculatePrice/{given_cartid}")]
-        public void TotalPrice(int given_cartid)
-        {
-            double Sum_of_cartproducts = (from cartproducts in _context.CartProducts
-                                          where cartproducts.CartId == given_cartid
-                                          select cartproducts.CartQuantity *
-                                          cartproducts.Product.ProductPrice).Sum();
-            var price = Sum_of_cartproducts;
+        // [HttpPost("CalculatePrice/{given_cartid}")]
+        // public void TotalPrice(int given_cartid)
+        // {
+        //     double Sum_of_cartproducts = (from cartproducts in _context.CartProducts
+        //                                   where cartproducts.CartId == given_cartid
+        //                                   select cartproducts.CartQuantity *
+        //                                   cartproducts.Product.ProductPrice).Sum();
+        //     var price = Sum_of_cartproducts;
 
-            var search_cart = _context.Carts.Find(given_cartid);
-            search_cart.CartTotalPrice = price;
-            _context.SaveChanges();
-        }
+        //     var search_cart = _context.Carts.Find(given_cartid);
+        //     search_cart.CartTotalPrice = price;
+        //     _context.SaveChanges();
+        // }
 
         public IActionResult RetrievePrice(int given_cartid)
         {
@@ -170,16 +170,16 @@ namespace Backend_Website.Controllers
         public ActionResult getOrder()
         {
             var Id = int.Parse((_caller.Claims.Single(c => c.Type == "id")).Value);
-    
+            
             var orders = (from o in _context.Orders
                             where o.UserId == Id
                             let o_i = (from entry in _context.OrderProduct
-                                        where entry.OrderId == o.Id
+                                        //where entry.OrderId == o.Id
                                         select new
                                         {
                                             product = new 
                                             {
-                                                id = entry.Product.Id,
+                                                id                      = entry.Product.Id,
                                                 productNumber           = entry.Product.ProductNumber,
                                                 productName             = entry.Product.ProductName,
                                                 productEAN              = entry.Product.ProductEAN,
@@ -201,10 +201,10 @@ namespace Backend_Website.Controllers
                                                 orderDate               = o.OrderDate,
                                                 orderid                 = o.Id,
 
-                                                adressStreet    = o.Address.Street,
-                                                adressCity      = o.Address.City,
-                                                adressNumber    = o.Address.HouseNumber,
-                                                adressZip       = o.Address.ZipCode
+                                                adressStreet            = o.Address.Street,
+                                                adressCity              = o.Address.City,
+                                                adressNumber            = o.Address.HouseNumber,
+                                                adressZip               = o.Address.ZipCode
                                             }        
                                         })
                             select new {Products = o_i}).ToArray();
@@ -216,7 +216,6 @@ namespace Backend_Website.Controllers
         {
             var userId = int.Parse((_caller.Claims.Single(c => c.Type == "id")).Value);
             var exists = _context.Orders.Where(x => x.Id == Id && x.UserId == userId).Select(x => x).ToArray();
-            Console.WriteLine("this is the length of the array: " + exists.Length);
             if (exists.Length == 1)
             {
                 var orders = (from o in _context.Orders
@@ -245,31 +244,7 @@ namespace Backend_Website.Controllers
                                                     itemsInOrder            = entry.OrderQuantity
                                                 }        
                                             })
-                                select new 
-                                {
-                                    Orders = new 
-                                    {
-                                        id              = o.Id,
-                                        userId          = o.UserId,
-                                        userFirstName   = o.User.FirstName,
-                                        userLastName    = o.User.LastName,
-                                        userEmail       = o.User.EmailAddress,
-
-                                        addressId       = o.AddressId,
-                                        adressStreet    = o.Address.Street,
-                                        adressCity      = o.Address.City,
-                                        adressNumber    = o.Address.HouseNumber,
-                                        adressZip       = o.Address.ZipCode,
-
-                                        orderStatusId   = o.OrderStatusId,
-                                        orderStatus     = o.OrderStatus.OrderDescription,
-
-                                        orderTotalPrice = o.OrderTotalPrice,
-                                        orderPayment    = o.OrderPaymentMethod,
-                                        orderDate       = o.OrderDate,
-                                        products        = o_i
-                                    }
-                                }).ToArray();
+                                select new { Products = o_i }).ToArray();
                 return Ok(orders.FirstOrDefault());
             }
             return NotFound();
@@ -334,6 +309,9 @@ namespace Backend_Website.Controllers
                     _context.OrderProduct.Add(orderproduct);
                     _context.CartProducts.Remove(item);
                 }
+
+                _context.SaveChanges();
+                TotalPrice(_context.Users.Where(x => x.Id == userId).Select(x => x.Cart.Id).FirstOrDefault());
             }
 
             else
@@ -381,11 +359,34 @@ namespace Backend_Website.Controllers
                     };
                     _context.OrderProduct.Add(orderproduct);
                 }
+
+                _context.SaveChanges();
             }
             
-            _context.SaveChanges();
+            
             return Ok();
         }
 
+        public void TotalPrice(int cartId)
+        {
+            // var Sum_of_cartproducts = (from cartproducts in _context.CartProducts
+            //                             where cartproducts.CartId == given_cartid
+            //                             select cartproducts.CartQuantity *
+            //                             cartproducts.Product.ProductPrice).Sum();
+            
+            // Console.WriteLine("this is the sum of cartproducts: " + Sum_of_cartproducts);
+            // var search_cart = _context.Carts.Find(given_cartid);
+            // search_cart.CartTotalPrice = Sum_of_cartproducts;
+            // _context.SaveChanges();
+
+            var totalPrice  = (from item in _context.CartProducts
+                                where cartId == item.CartId
+                                select (item.Product.ProductPrice * item.CartQuantity)).Sum();
+            
+            var cart        = _context.Carts.Find(cartId);
+            cart.CartTotalPrice = totalPrice;
+            _context.Carts.Update(cart);
+            _context.SaveChanges();
+        }
     }
 }

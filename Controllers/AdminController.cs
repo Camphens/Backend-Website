@@ -548,7 +548,44 @@ namespace Backend_Website.Controllers
         [HttpGet("Orders")]
         public ActionResult AdminGetOrders()
         {       
-            return Ok();
+            var orders = (from o in _context.Orders
+                            let o_i = (from entry in _context.OrderProduct
+                                        where entry.OrderId == o.Id
+                                        select new
+                                        {
+                                            product = new 
+                                            {
+                                                id                      = entry.Product.Id,
+                                                productNumber           = entry.Product.ProductNumber,
+                                                productName             = entry.Product.ProductName,
+                                                productEAN              = entry.Product.ProductEAN,
+                                                productInfo             = entry.Product.ProductInfo,
+                                                productDescription      = entry.Product.ProductDescription,
+                                                productSpecification    = entry.Product.ProductSpecification,
+                                                ProductPrice            = entry.Product.ProductPrice,
+                                                productColor            = entry.Product.ProductColor,
+                                                Images                  = entry.Product.ProductImages.OrderBy(i => i.ImageURL).FirstOrDefault().ImageURL,
+                                                Type                    = entry.Product._Type._TypeName,
+                                                Category                = entry.Product.Category.CategoryName,
+                                                Collection              = entry.Product.Collection.CollectionName,
+                                                Brand                   = entry.Product.Brand.BrandName,
+                                                Stock                   = entry.Product.Stock.ProductQuantity,
+                                                itemsInOrder            = entry.OrderQuantity,
+
+                                                orderStatus             = o.OrderStatus.OrderDescription,
+                                                orderPayment            = o.OrderPaymentMethod,
+                                                orderDate               = o.OrderDate,
+                                                orderid                 = o.Id,
+
+                                                adressStreet            = o.Address.Street,
+                                                adressCity              = o.Address.City,
+                                                adressNumber            = o.Address.HouseNumber,
+                                                adressZip               = o.Address.ZipCode
+                                            }        
+                                        })
+                            select new {Products = o_i}).ToArray();
+
+            return Ok(orders.FirstOrDefault());
         }
 
         [HttpGet("UserId={Id}/Orders")]
