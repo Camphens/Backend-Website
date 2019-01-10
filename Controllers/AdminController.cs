@@ -16,7 +16,7 @@ using Backend_Website.Helpers;
 namespace Backend_Website.Controllers
 {
     [Authorize(Policy = "_IsAdmin")]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class AdminController : Controller
     {
@@ -539,7 +539,16 @@ namespace Backend_Website.Controllers
         }
     
         //Methode voor Get Users "Paged", zoals iemand producten zou krijgen.
-
+        [HttpGet("Users/{page_index}/{page_size}")]
+        public ActionResult AdminUsersPaged(int page_index, int page_size)
+        {
+                var UserInfo = _context.Users.GetPage<User>(page_index, page_size, a => a.Id);
+                if (UserInfo == null) 
+                {
+                    return NotFound();
+                }
+                return Ok(UserInfo);
+        }
 
         /////////////////////////////////////////////////////////////////////////////////
         // Order
@@ -550,7 +559,7 @@ namespace Backend_Website.Controllers
         {       
             var orders = (from o in _context.Orders
                             let o_i = (from entry in _context.OrderProduct
-                                        where entry.OrderId == o.Id
+                                        orderby entry.Order.OrderDate descending
                                         select new
                                         {
                                             product = new 
@@ -572,15 +581,15 @@ namespace Backend_Website.Controllers
                                                 Stock                   = entry.Product.Stock.ProductQuantity,
                                                 itemsInOrder            = entry.OrderQuantity,
 
-                                                orderStatus             = o.OrderStatus.OrderDescription,
-                                                orderPayment            = o.OrderPaymentMethod,
-                                                orderDate               = o.OrderDate,
-                                                orderid                 = o.Id,
+                                                orderStatus             = entry.Order.OrderStatus.OrderDescription,
+                                                orderPayment            = entry.Order.OrderPaymentMethod,
+                                                orderDate               = entry.Order.OrderDate,
+                                                orderid                 = entry.Order.Id,
 
-                                                adressStreet            = o.Address.Street,
-                                                adressCity              = o.Address.City,
-                                                adressNumber            = o.Address.HouseNumber,
-                                                adressZip               = o.Address.ZipCode
+                                                adressStreet            = entry.Order.Address.Street,
+                                                adressCity              = entry.Order.Address.City,
+                                                adressNumber            = entry.Order.Address.HouseNumber,
+                                                adressZip               = entry.Order.Address.ZipCode
                                             }        
                                         })
                             select new {Products = o_i}).ToArray();
@@ -596,12 +605,11 @@ namespace Backend_Website.Controllers
                 var orders = (from o in _context.Orders
                                 where o.UserId == Id
                                 let o_i = (from entry in _context.OrderProduct
-                                            where entry.OrderId == o.Id
                                             select new
                                             {
                                                 product = new 
                                                 {
-                                                    id = entry.Product.Id,
+                                                    id                      = entry.Product.Id,
                                                     productNumber           = entry.Product.ProductNumber,
                                                     productName             = entry.Product.ProductName,
                                                     productEAN              = entry.Product.ProductEAN,
@@ -616,34 +624,30 @@ namespace Backend_Website.Controllers
                                                     Collection              = entry.Product.Collection.CollectionName,
                                                     Brand                   = entry.Product.Brand.BrandName,
                                                     Stock                   = entry.Product.Stock.ProductQuantity,
-                                                    itemsInOrder            = entry.OrderQuantity
+                                                    itemsInOrder            = entry.OrderQuantity,
+
+                                                    orderId                 = entry.Order.Id,
+                                                    userId                  = entry.Order.UserId,
+                                                    userFirstName           = entry.Order.User.FirstName,
+                                                    userLastName            = entry.Order.User.LastName,
+                                                    userEmail               = entry.Order.User.EmailAddress,
+
+                                                    addressId               = entry.Order.AddressId,
+                                                    adressStreet            = entry.Order.Address.Street,
+                                                    adressCity              = entry.Order.Address.City,
+                                                    adressNumber            = entry.Order.Address.HouseNumber,
+                                                    adressZip               = entry.Order.Address.ZipCode,
+
+                                                    orderStatusId           = entry.Order.OrderStatusId,
+                                                    orderStatus             = entry.Order.OrderStatus.OrderDescription,
+
+                                                    orderTotalPrice         = entry.Order.OrderTotalPrice,
+                                                    orderPayment            = entry.Order.OrderPaymentMethod,
+                                                    orderDate               = entry.Order.OrderDate
                                                 }        
                                             })
-                                select new {
-                                    Order = new
-                                    {
-                                        id              = o.Id,
-                                        userId          = o.UserId,
-                                        userFirstName   = o.User.FirstName,
-                                        userLastName    = o.User.LastName,
-                                        userEmail       = o.User.EmailAddress,
-
-                                        addressId       = o.AddressId,
-                                        adressStreet    = o.Address.Street,
-                                        adressCity      = o.Address.City,
-                                        adressNumber    = o.Address.HouseNumber,
-                                        adressZip       = o.Address.ZipCode,
-
-                                        orderStatusId   = o.OrderStatusId,
-                                        orderStatus     = o.OrderStatus.OrderDescription,
-
-                                        orderTotalPrice = o.OrderTotalPrice,
-                                        orderPayment    = o.OrderPaymentMethod,
-                                        orderDate       = o.OrderDate,
-                                        products        = o_i
-                                    }
-                                    }).ToArray();
-                return Ok(orders);
+                                select new {Products =  o_i}).ToArray();
+                return Ok(orders.FirstOrDefault());
             }
             return NotFound();
         }
@@ -656,12 +660,11 @@ namespace Backend_Website.Controllers
                 var orders = (from o in _context.Orders
                                 where o.Id == Id
                                 let o_i = (from entry in _context.OrderProduct
-                                            where entry.OrderId == o.Id
                                             select new
                                             {
                                                 product = new 
                                                 {
-                                                    id = entry.Product.Id,
+                                                    id                      = entry.Product.Id,
                                                     productNumber           = entry.Product.ProductNumber,
                                                     productName             = entry.Product.ProductName,
                                                     productEAN              = entry.Product.ProductEAN,
@@ -676,34 +679,29 @@ namespace Backend_Website.Controllers
                                                     Collection              = entry.Product.Collection.CollectionName,
                                                     Brand                   = entry.Product.Brand.BrandName,
                                                     Stock                   = entry.Product.Stock.ProductQuantity,
-                                                    itemsInOrder            = entry.OrderQuantity
+                                                    itemsInOrder            = entry.OrderQuantity,
+
+                                                    orderId                 = entry.Order.Id,
+                                                    userId                  = entry.Order.UserId,
+                                                    userFirstName           = entry.Order.User.FirstName,
+                                                    userLastName            = entry.Order.User.LastName,
+                                                    userEmail               = entry.Order.User.EmailAddress,
+
+                                                    addressId               = entry.Order.AddressId,
+                                                    adressStreet            = entry.Order.Address.Street,
+                                                    adressCity              = entry.Order.Address.City,
+                                                    adressNumber            = entry.Order.Address.HouseNumber,
+                                                    adressZip               = entry.Order.Address.ZipCode,
+
+                                                    orderStatusId           = entry.Order.OrderStatusId,
+                                                    orderStatus             = entry.Order.OrderStatus.OrderDescription,
+
+                                                    orderTotalPrice         = entry.Order.OrderTotalPrice,
+                                                    orderPayment            = entry.Order.OrderPaymentMethod,
+                                                    orderDate               = entry.Order.OrderDate
                                                 }        
                                             })
-                                select new 
-                                {
-                                    Orders = new 
-                                    {
-                                        id              = o.Id,
-                                        userId          = o.UserId,
-                                        userFirstName   = o.User.FirstName,
-                                        userLastName    = o.User.LastName,
-                                        userEmail       = o.User.EmailAddress,
-
-                                        addressId       = o.AddressId,
-                                        adressStreet    = o.Address.Street,
-                                        adressCity      = o.Address.City,
-                                        adressNumber    = o.Address.HouseNumber,
-                                        adressZip       = o.Address.ZipCode,
-
-                                        orderStatusId   = o.OrderStatusId,
-                                        orderStatus     = o.OrderStatus.OrderDescription,
-
-                                        orderTotalPrice = o.OrderTotalPrice,
-                                        orderPayment    = o.OrderPaymentMethod,
-                                        orderDate       = o.OrderDate,
-                                        products        = o_i
-                                    }
-                                }).ToArray();
+                                select new {Products =  o_i}).ToArray();
                 return Ok(orders.FirstOrDefault());
             }
             return NotFound();

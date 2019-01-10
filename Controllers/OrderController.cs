@@ -174,7 +174,7 @@ namespace Backend_Website.Controllers
             var orders = (from o in _context.Orders
                             where o.UserId == Id
                             let o_i = (from entry in _context.OrderProduct
-                                        //where entry.OrderId == o.Id
+                                        orderby entry.Order.OrderDate descending
                                         select new
                                         {
                                             product = new 
@@ -196,15 +196,15 @@ namespace Backend_Website.Controllers
                                                 Stock                   = entry.Product.Stock.ProductQuantity,
                                                 itemsInOrder            = entry.OrderQuantity,
 
-                                                orderStatus             = o.OrderStatus.OrderDescription,
-                                                orderPayment            = o.OrderPaymentMethod,
-                                                orderDate               = o.OrderDate,
-                                                orderid                 = o.Id,
+                                                orderStatus             = entry.Order.OrderStatus.OrderDescription,
+                                                orderPayment            = entry.Order.OrderPaymentMethod,
+                                                orderDate               = entry.Order.OrderDate,
+                                                orderid                 = entry.Order.Id,
 
-                                                adressStreet            = o.Address.Street,
-                                                adressCity              = o.Address.City,
-                                                adressNumber            = o.Address.HouseNumber,
-                                                adressZip               = o.Address.ZipCode
+                                                adressStreet            = entry.Order.Address.Street,
+                                                adressCity              = entry.Order.Address.City,
+                                                adressNumber            = entry.Order.Address.HouseNumber,
+                                                adressZip               = entry.Order.Address.ZipCode
                                             }        
                                         })
                             select new {Products = o_i}).ToArray();
