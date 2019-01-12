@@ -137,20 +137,6 @@ namespace Backend_Website.Controllers
             return Ok(order);
         }
 
-        // [HttpPost("CalculatePrice/{given_cartid}")]
-        // public void TotalPrice(int given_cartid)
-        // {
-        //     double Sum_of_cartproducts = (from cartproducts in _context.CartProducts
-        //                                   where cartproducts.CartId == given_cartid
-        //                                   select cartproducts.CartQuantity *
-        //                                   cartproducts.Product.ProductPrice).Sum();
-        //     var price = Sum_of_cartproducts;
-
-        //     var search_cart = _context.Carts.Find(given_cartid);
-        //     search_cart.CartTotalPrice = price;
-        //     _context.SaveChanges();
-        // }
-
         public IActionResult RetrievePrice(int given_cartid)
         {
             var query = (from entries in _context.Carts
@@ -159,7 +145,6 @@ namespace Backend_Website.Controllers
             return Ok(query);
 
         }
-
 
 
 
@@ -174,6 +159,7 @@ namespace Backend_Website.Controllers
             var orders = (from o in _context.Orders
                             where o.UserId == Id
                             let o_i = (from entry in _context.OrderProduct
+                                        where entry.OrderId == o.Id
                                         orderby entry.Order.OrderDate descending
                                         select new
                                         {
@@ -297,17 +283,26 @@ namespace Backend_Website.Controllers
                 };
                 _context.Orders.Add(o);
 
-
                 foreach (var item in cartItems)
                 {
-                    var orderproduct = new OrderProduct
-                    {
-                        OrderId         = o.Id,
-                        ProductId       = item.ProductId,
-                        OrderQuantity   = item.CartQuantity
-                    };
-                    _context.OrderProduct.Add(orderproduct);
-                    _context.CartProducts.Remove(item);
+                    int productItem = item.ProductId;
+                    var productSelection = _context.OrderProduct.Where(x => x.OrderId == o.Id && x.ProductId == productItem).Select(x => x);
+
+                    if (productSelection.Count() == 1){
+                       productSelection.FirstOrDefault().OrderQuantity = productSelection.FirstOrDefault().OrderQuantity + 1;
+                       _context.Update(productSelection);
+                    }
+
+                    else{
+                        var orderproduct = new OrderProduct
+                        {
+                            OrderId         = o.Id,
+                            ProductId       = item.ProductId,
+                            OrderQuantity   = item.CartQuantity
+                        };
+                        _context.OrderProduct.Add(orderproduct);
+                        _context.CartProducts.Remove(item);
+                    }
                 }
 
                 _context.SaveChanges();
@@ -351,13 +346,23 @@ namespace Backend_Website.Controllers
 
                 foreach (var item in cartItems)
                 {
-                    var orderproduct = new OrderProduct
-                    {
-                        OrderId         = o.Id,
-                        ProductId       = item.ProductId,
-                        OrderQuantity   = item.CartQuantity
-                    };
-                    _context.OrderProduct.Add(orderproduct);
+                    int productItem = item.ProductId;
+                    var productSelection = _context.OrderProduct.Where(x => x.OrderId == o.Id && x.ProductId == productItem).Select(x => x);
+
+                    if (productSelection.Count() == 1){
+                       productSelection.FirstOrDefault().OrderQuantity = productSelection.FirstOrDefault().OrderQuantity + 1;
+                       _context.Update(productSelection);
+                    }
+
+                    else{
+                        var orderproduct = new OrderProduct
+                        {
+                            OrderId         = o.Id,
+                            ProductId       = item.ProductId,
+                            OrderQuantity   = item.CartQuantity
+                        };
+                        _context.OrderProduct.Add(orderproduct);
+                    }
                 }
 
                 _context.SaveChanges();
