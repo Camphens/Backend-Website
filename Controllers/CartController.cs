@@ -265,13 +265,43 @@ namespace Backend_Website.Controllers
                 return BadRequest(ModelState);
             }
 
-            var userId  = _caller.Claims.Single(c => c.Type == "id");
-            var cartId  = (from cart in _context.Carts
-                          where cart.UserId == int.Parse(userId.Value)
-                          select cart.Id).ToArray();
+            var userId      = _caller.Claims.Single(c => c.Type == "id");
+            var cartId      = (from cart in _context.Carts
+                                where cart.UserId == int.Parse(userId.Value)
+                                select cart.Id).ToArray();
+            var cartItem    = _context.CartProducts.Where(x => x.CartId == cartId.FirstOrDefault() && x.ProductId == _cartItem.ProductId).Select(x => x).ToArray();
 
-            var stockid = (_context.Stock.Where(s => s.Product.Id == _cartItem.ProductId).Select(p => p.Id)).ToArray().First();
-            var stock   = _context.Stock.Find(stockid);
+            var stockid     = (_context.Stock.Where(s => s.Product.Id == _cartItem.ProductId).Select(p => p.Id)).ToArray().First();
+            var stock       = _context.Stock.Find(stockid);
+
+            Console.WriteLine("Lengte van cartItem is: {0}", cartItem.Length);
+
+            if(cartItem.Length >= 1)
+            {
+                int oldQuantity = cartItem.FirstOrDefault().CartQuantity;
+            
+                if (stock.ProductQuantity + oldQuantity < _cartItem.CartQuantity)
+                {
+                    cartItem[0].CartQuantity = stock.ProductQuantity + oldQuantity;
+                    stock.ProductQuantity = 0;
+                }
+
+                else
+                {
+                    cartItem[0].CartQuantity = _cartItem.CartQuantity + oldQuantity;
+                    stock.ProductQuantity = stock.ProductQuantity - cartItem[0].CartQuantity;
+                }
+                
+
+                _context.Update(stock);
+                _context.CartProducts.Update(cartItem[0]);
+                _context.SaveChanges();
+
+                TotalPrice(cartItem[0].CartId);
+
+                return Ok();
+            }
+
             var remainingQuantity = _cartItem.CartQuantity;
 
 
@@ -291,7 +321,7 @@ namespace Backend_Website.Controllers
                 stock.ProductQuantity = stock.ProductQuantity - _cartItem.CartQuantity;
             }
 
-
+            
             CartProduct product = new CartProduct()
             {
                 CartId = cartId[0],
