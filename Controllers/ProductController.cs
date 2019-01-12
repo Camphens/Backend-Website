@@ -275,14 +275,14 @@ namespace Backend_Website.Controllers
             _context.Products.Add(Product);
 
             ///////////////IMAGE////////////////
-            ProductImage ProductImage = new ProductImage()
-            {
-                ProductId = Product.Id,
-                ImageURL = ProductDetailsJSON.ImageURL,
-                //Id = ProductDetailsJSON.ImageId
-                Id = _context.ProductImages.Select(a => a.Id).Max() + 1,
-            };
-            _context.ProductImages.Add(ProductImage);
+            // ProductImage ProductImage = new ProductImage()
+            // {
+            //     ProductId = Product.Id,
+            //     ImageURL = ProductDetailsJSON.ImageURL,
+            //     //Id = ProductDetailsJSON.ImageId
+            //     Id = _context.ProductImages.Select(a => a.Id).Max() + 1,
+            // };
+            // _context.ProductImages.Add(ProductImage);
 
             _context.SaveChanges();
         }
