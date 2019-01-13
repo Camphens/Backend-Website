@@ -58,7 +58,12 @@ namespace Backend_Website.Controllers
             isvalid.Wait();
 
             if (!isvalid.Result){
-               return new BadRequestObjectResult("Onjuiste Email");}
+                var obj = new
+                {
+                    EmailAddress = "Onjuist"
+                };
+                var json = JsonConvert.SerializeObject(obj);
+                return new BadRequestObjectResult(json);}
 
             await _context.Users.AddAsync(user);
             
