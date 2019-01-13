@@ -48,7 +48,7 @@ namespace Backend_Website.Controllers
             // Checks if Username Password combination is correct.
             var identity = await GetClaimsIdentity(credentials.EmailAddress, credentials.UserPassword);
             if (identity == null){
-                return BadRequest(Errors.AddErrorToModelState("login_failure", "Invalid username or password.", ModelState));}
+                return BadRequest(Errors.AddErrorToModelState("login_failure", "Onjuiste email of wachtwoord.", ModelState));}
 
             // Generates Token
             var jwt = await Tokens.GenerateJwt(identity, _jwtGenerator, credentials.EmailAddress, _jwtOptions, new JsonSerializerSettings { Formatting = Formatting.Indented });

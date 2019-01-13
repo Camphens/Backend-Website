@@ -131,7 +131,7 @@ namespace Backend_Website.Controllers
             }
 
             if(!ModelState.IsValid){
-                return BadRequest();
+                return BadRequest(ModelState);
             }
 
             var userId      = _caller.Claims.Single(c => c.Type == "id");
@@ -174,7 +174,7 @@ namespace Backend_Website.Controllers
                 }
             };
             _context.SaveChanges();
-            return Ok(ModelState);
+            return Ok();
         }
 
         
