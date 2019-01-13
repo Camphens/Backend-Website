@@ -37,22 +37,18 @@ namespace Backend_Website.Controllers
             UserRegistrationViewModelValidator validator        = new UserRegistrationViewModelValidator();
             FluentValidation.Results.ValidationResult results   = validator.Validate(userDetails);
 
-            // var isvalid = Utils.IsValidAsync((userDetails.EmailAddress).ToString());
-            // isvalid.Wait();
-
-            // if (!isvalid.Result){
-            //     var obj = new
-            //     {
-            //         EmailAddress = "Onjuist"
-            //     };
-            //     var json = JsonConvert.SerializeObject(obj);
-            //     return new BadRequestObjectResult(json);
-            // }
+            var isvalid = Utils.IsValidAsync((userDetails.EmailAddress).ToString());
+            isvalid.Wait();
 
             if (!results.IsValid){
                 foreach(var failure in results.Errors){
                     Errors.AddErrorToModelState(failure.PropertyName, failure.ErrorMessage, ModelState);
                 }
+            }
+
+            if(!isvalid.Result)
+            {
+                Errors.AddErrorToModelState("EmailAddress", "Emailadres onjuist", ModelState);
             }
 
             if (!ModelState.IsValid){

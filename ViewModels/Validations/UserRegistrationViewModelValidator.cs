@@ -10,7 +10,7 @@ namespace Backend_Website.ViewModels.Validations
         {
             RuleFor(a => a.BirthDate).GreaterThanOrEqualTo(new System.DateTime(1860, 1, 1, 0, 0, 0)).WithMessage("Geboortedatum onjuist");
             RuleFor(a => a.BirthDate).LessThanOrEqualTo(new System.DateTime(2019, 1, 1, 0, 0, 0)).WithMessage("Geboortedatum onjuist");
-            //RuleFor(a => a.EmailAddress)..WithMessage("o");
+            
             RuleFor(a => a.UserPassword).MinimumLength(3).WithMessage("Wachtwoord moet meer dan 3 tekens bevatten");
         }
     }
