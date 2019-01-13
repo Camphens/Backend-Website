@@ -59,4 +59,20 @@ namespace Backend_Website.ViewModels
            myPropInfo.SetValue(this, value, null);}
         }
     }
+
+    [Validator(typeof(UserRegistrationViewModelValidator))]
+    public class UserRegistrationViewModel
+    {
+        public string UserPassword  { get; set; }
+        public string FirstName     { get; set; }
+        public string LastName      { get; set; }
+        public DateTime BirthDate   { get; set; }
+        public string Gender        { get; set; }
+        public string EmailAddress  { get; set; }
+        public int? PhoneNumber     { get; set; }
+        public string Street        { get; set; }
+        public string City          { get; set; }
+        public string ZipCode       { get; set; }
+        public string HouseNumber   { get; set; }
+    }
 }

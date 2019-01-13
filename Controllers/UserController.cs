@@ -30,8 +30,35 @@ namespace Backend_Website.Controllers
 
         [AllowAnonymous]
         [HttpPost("Registration")]
-        public async Task<IActionResult> RegisterUser(dynamic UserDetails){
-            dynamic UserDetailsJson = JsonConvert.DeserializeObject(UserDetails.ToString());
+        public async Task<IActionResult> RegisterUser([FromBody]UserRegistrationViewModel userDetails){
+            //dynamic UserDetailsJson = JsonConvert.DeserializeObject(UserDetails.ToString());
+
+
+            UserRegistrationViewModelValidator validator        = new UserRegistrationViewModelValidator();
+            FluentValidation.Results.ValidationResult results   = validator.Validate(userDetails);
+
+            // var isvalid = Utils.IsValidAsync((userDetails.EmailAddress).ToString());
+            // isvalid.Wait();
+
+            // if (!isvalid.Result){
+            //     var obj = new
+            //     {
+            //         EmailAddress = "Onjuist"
+            //     };
+            //     var json = JsonConvert.SerializeObject(obj);
+            //     return new BadRequestObjectResult(json);
+            // }
+
+            if (!results.IsValid){
+                foreach(var failure in results.Errors){
+                    Errors.AddErrorToModelState(failure.PropertyName, failure.ErrorMessage, ModelState);
+                }
+            }
+
+            if (!ModelState.IsValid){
+                return BadRequest(ModelState);
+            }
+
             
             int availableId = 1;
             int availableAddressId = 1;
@@ -46,24 +73,13 @@ namespace Backend_Website.Controllers
 
             User user = new User(){
                 Id              = availableId,
-                UserPassword    = UserDetailsJson.UserPassword,
-                FirstName       = UserDetailsJson.FirstName,
-                LastName        = UserDetailsJson.LastName,
-                BirthDate       = UserDetailsJson.BirthDate,
-                Gender          = UserDetailsJson.Gender,
-                EmailAddress    = UserDetailsJson.EmailAddress,
-                PhoneNumber     = UserDetailsJson.PhoneNumber};
-
-            var isvalid = Utils.IsValidAsync((UserDetailsJson.EmailAddress).ToString());
-            isvalid.Wait();
-
-            if (!isvalid.Result){
-                var obj = new
-                {
-                    EmailAddress = "Onjuist"
-                };
-                var json = JsonConvert.SerializeObject(obj);
-                return new BadRequestObjectResult(json);}
+                UserPassword    = userDetails.UserPassword,
+                FirstName       = userDetails.FirstName,
+                LastName        = userDetails.LastName,
+                BirthDate       = userDetails.BirthDate,
+                Gender          = userDetails.Gender,
+                EmailAddress    = userDetails.EmailAddress,
+                PhoneNumber     = userDetails.PhoneNumber};
 
             await _context.Users.AddAsync(user);
             
@@ -78,10 +94,10 @@ namespace Backend_Website.Controllers
 
             Address addressDetails = new Address(){
                 Id          = availableAddressId,
-                Street      = UserDetailsJson.Street,
-                City        = UserDetailsJson.City,
-                ZipCode     = UserDetailsJson.ZipCode,
-                HouseNumber = UserDetailsJson.HouseNumber
+                Street      = userDetails.Street,
+                City        = userDetails.City,
+                ZipCode     = userDetails.ZipCode,
+                HouseNumber = userDetails.HouseNumber
             };
             _context.Addresses.Add(addressDetails);
 
@@ -92,7 +108,9 @@ namespace Backend_Website.Controllers
             _context.UserAddress.Add(addressUser);
 
             await _context.SaveChangesAsync();
-            return new OkObjectResult("Registratie Voltooid"); 
+            string[] registratiewaarde = new string[1];
+            registratiewaarde[0] = "Registratie Voltooid";
+            return new OkObjectResult(new {Registratie = registratiewaarde}); 
         }
 
         [HttpGet("User")]
@@ -163,6 +181,7 @@ namespace Backend_Website.Controllers
             return Ok(ModelState);
         }
 
+        
     }
 
 }
