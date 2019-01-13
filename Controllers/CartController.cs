@@ -224,7 +224,7 @@ namespace Backend_Website.Controllers
             var stockid     = (_context.Stock.Where(s => s.Product.Id == _cartItem.ProductId).Select(p => p.Id)).ToArray().First();
             var stock       = _context.Stock.Find(stockid);
 
-            if (stock.ProductQuantity + oldQuantity < _cartItem.CartQuantity)
+            if (stock.ProductQuantity < _cartItem.CartQuantity)
             {
                 cartItem[0].CartQuantity = stock.ProductQuantity + oldQuantity;
                 stock.ProductQuantity = 0;
@@ -280,7 +280,7 @@ namespace Backend_Website.Controllers
             {
                 int oldQuantity = cartItem.FirstOrDefault().CartQuantity;
             
-                if (stock.ProductQuantity + oldQuantity < _cartItem.CartQuantity)
+                if (stock.ProductQuantity < _cartItem.CartQuantity)
                 {
                     cartItem[0].CartQuantity = stock.ProductQuantity + oldQuantity;
                     stock.ProductQuantity = 0;

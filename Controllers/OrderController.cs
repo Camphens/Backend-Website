@@ -368,7 +368,6 @@ namespace Backend_Website.Controllers
                 _context.SaveChanges();
             }
             
-            
             return Ok();
         }
 
