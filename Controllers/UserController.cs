@@ -51,6 +51,12 @@ namespace Backend_Website.Controllers
                 Errors.AddErrorToModelState("EmailAddress", "Emailadres onjuist", ModelState);
             }
 
+            if(_context.Users.Where(x => x.EmailAddress == userDetails.EmailAddress).Select(x => x).ToArray().Length >= 1)
+            {
+                Errors.AddErrorToModelState("EmailAddress", "Emailadres al in gebruik", ModelState);
+            }
+
+
             if (!ModelState.IsValid){
                 return BadRequest(ModelState);
             }
