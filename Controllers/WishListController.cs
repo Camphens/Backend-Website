@@ -222,7 +222,7 @@ namespace Backend_Website.Controllers
         }
 
         [HttpPost("toCart")]
-        public ActionResult WishlistItemsToCart([FromBody] WishlistToCartViewModel _wishlistItem)
+        public ActionResult WishlistItemsToCart([FromBody] WishlistViewModel _wishlistItem)
         {
             var userId = _caller.Claims.Single(c => c.Type == "id");
             var cartId = (from cart in _context.Carts
@@ -230,45 +230,82 @@ namespace Backend_Website.Controllers
                           select cart.Id).ToArray();
 
 
-            foreach (var item in _wishlistItem.ProductId)
+            // foreach (var item in _wishlistItem.ProductId)
+            // {
+
+            //     var cartItem = (from c in _context.CartProducts
+            //                     where c.Cart.UserId == int.Parse(userId.Value) && c.ProductId == item
+            //                     select c).ToArray();
+            //     var wishlistItem = (from w in _context.WishlistProduct
+            //                         where w.Wishlist.UserId == int.Parse(userId.Value) && w.ProductId == item
+            //                         select w).ToArray();
+
+            //     var stockid = (_context.Stock.Where(s => s.Product.Id == item).Select(p => p.Id)).ToArray().First();
+            //     var stock = _context.Stock.Find(stockid);
+
+            //     if (stock.ProductQuantity == 0)
+            //     {
+            //         break;
+            //     }
+
+            //     else if (cartItem.Length != 0)
+            //     {
+            //         _context.WishlistProduct.Remove(wishlistItem[0]);
+            //     }
+
+            //     else
+            //     {
+            //         stock.ProductQuantity--;
+
+            //         CartProduct product = new CartProduct()
+            //         {
+            //             CartId = cartId[0],
+            //             ProductId = item,
+            //             CartQuantity = 1,
+            //             CartDateAdded = DateTime.Now
+            //         };
+
+            //         _context.Add(product);
+            //         _context.WishlistProduct.Remove(wishlistItem[0]);
+            //         _context.Stock.Update(stock);
+            //     }
+            // }
+
+            var cartItem = (from c in _context.CartProducts
+                            where c.Cart.UserId == int.Parse(userId.Value) && c.ProductId == _wishlistItem.ProductId
+                            select c).ToArray();
+            var wishlistItem = (from w in _context.WishlistProduct
+                                where w.Wishlist.UserId == int.Parse(userId.Value) && w.ProductId == _wishlistItem.ProductId
+                                select w).ToArray();
+
+            var stockid = (_context.Stock.Where(s => s.Product.Id == _wishlistItem.ProductId).Select(p => p.Id)).ToArray().First();
+            var stock = _context.Stock.Find(stockid);
+
+            if (stock.ProductQuantity == 0)
             {
+                return Ok(new {wishlistItem = "Is niet op voorraad"});
+            }
 
-                var cartItem = (from c in _context.CartProducts
-                                where c.Cart.UserId == int.Parse(userId.Value) && c.ProductId == item
-                                select c).ToArray();
-                var wishlistItem = (from w in _context.WishlistProduct
-                                    where w.Wishlist.UserId == int.Parse(userId.Value) && w.ProductId == item
-                                    select w).ToArray();
+            else if (cartItem.Length != 0)
+            {
+                _context.WishlistProduct.Remove(wishlistItem[0]);
+            }
 
-                var stockid = (_context.Stock.Where(s => s.Product.Id == item).Select(p => p.Id)).ToArray().First();
-                var stock = _context.Stock.Find(stockid);
+            else
+            {
+                stock.ProductQuantity--;
 
-                if (stock.ProductQuantity == 0)
+                CartProduct product = new CartProduct()
                 {
-                    break;
-                }
+                    CartId = cartId[0],
+                    ProductId = _wishlistItem.ProductId,
+                    CartQuantity = 1,
+                    CartDateAdded = DateTime.Now
+                };
 
-                else if (cartItem.Length != 0)
-                {
-                    _context.WishlistProduct.Remove(wishlistItem[0]);
-                }
-
-                else
-                {
-                    stock.ProductQuantity--;
-
-                    CartProduct product = new CartProduct()
-                    {
-                        CartId = cartId[0],
-                        ProductId = item,
-                        CartQuantity = 1,
-                        CartDateAdded = DateTime.Now
-                    };
-
-                    _context.Add(product);
-                    _context.WishlistProduct.Remove(wishlistItem[0]);
-                    _context.Stock.Update(stock);
-                }
+                _context.Add(product);
+                _context.WishlistProduct.Remove(wishlistItem[0]);
+                _context.Stock.Update(stock);
             }
 
             _context.SaveChanges();
