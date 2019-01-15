@@ -172,6 +172,7 @@ namespace Backend_Website.Controllers
                                                     productSpecification   = entry.Product.ProductSpecification,
                                                     ProductPrice           = entry.Product.ProductPrice,
                                                     productColor           = entry.Product.ProductColor,
+                                                    
                                                     Images                 = entry.Product.ProductImages.OrderBy(i => i.ImageURL).FirstOrDefault().ImageURL,
                                                     Type                   = entry.Product._Type._TypeName,
                                                     Category               = entry.Product.Category.CategoryName,

@@ -115,21 +115,22 @@ namespace Backend_Website.Controllers
                                              {
                                                  product = new
                                                  {
-                                                     id = entry.Product.Id,
-                                                     productNumber = entry.Product.ProductNumber,
-                                                     productName = entry.Product.ProductName,
-                                                     productEAN = entry.Product.ProductEAN,
-                                                     productInfo = entry.Product.ProductInfo,
-                                                     productDescription = entry.Product.ProductDescription,
-                                                     productSpecification = entry.Product.ProductSpecification,
-                                                     ProductPrice = entry.Product.ProductPrice,
-                                                     productColor = entry.Product.ProductColor,
-                                                     Images = entry.Product.ProductImages.OrderBy(i => i.ImageURL).FirstOrDefault().ImageURL,
-                                                     Type = entry.Product._Type._TypeName,
-                                                     Category = entry.Product.Category.CategoryName,
-                                                     Collection = entry.Product.Collection.CollectionName,
-                                                     Brand = entry.Product.Brand.BrandName,
-                                                     Stock = entry.Product.Stock.ProductQuantity
+                                                     id                     = entry.Product.Id,
+                                                     productNumber          = entry.Product.ProductNumber,
+                                                     productName            = entry.Product.ProductName,
+                                                     productEAN             = entry.Product.ProductEAN,
+                                                     productInfo            = entry.Product.ProductInfo,
+                                                     productDescription     = entry.Product.ProductDescription,
+                                                     productSpecification   = entry.Product.ProductSpecification,
+                                                     ProductPrice           = entry.Product.ProductPrice,
+                                                     productColor           = entry.Product.ProductColor,
+
+                                                     Images                 = entry.Product.ProductImages.OrderBy(i => i.ImageURL).FirstOrDefault().ImageURL,
+                                                     Type                   = entry.Product._Type._TypeName,
+                                                     Category               = entry.Product.Category.CategoryName,
+                                                     Collection             = entry.Product.Collection.CollectionName,
+                                                     Brand                  = entry.Product.Brand.BrandName,
+                                                     Stock                  = entry.Product.Stock.ProductQuantity
                                                  }
                                              }
                             select new { Products = cart_items }).ToArray();
