@@ -270,6 +270,11 @@ namespace Backend_Website.Controllers
                 totalPrice      = (from cart in _context.Carts
                                     where cart.UserId   == userId
                                     select cart.CartTotalPrice).ToArray().First();
+                
+                if (OrderDetails.Discount >= 0)
+                {
+                    totalPrice = totalPrice - (totalPrice * (OrderDetails.Discount/100));
+                }
 
                 var o = new Order
                 {
