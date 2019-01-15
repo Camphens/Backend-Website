@@ -127,11 +127,11 @@ namespace Backend_Website.Models
             .WithMany(b => b.Orders)
             .HasForeignKey(b => b.OrderStatusId)
             .IsRequired();
-            modelBuilder.Entity<Order>()
-            .HasOne(s => s.User)
-            .WithMany(b => b.Orders)
-            .HasForeignKey(b => b.UserId)
-            .IsRequired(false);
+            // modelBuilder.Entity<Order>()
+            // .HasOne(s => s.User)
+            // .WithMany(b => b.Orders)
+            // .HasForeignKey(b => b.UserId)
+            // .IsRequired(false);
             modelBuilder.Entity<Order>()
             .HasMany(p => p.Products)
             .WithOne(p => p.Order)
@@ -399,7 +399,7 @@ namespace Backend_Website.Models
     {
         public int Id {get; set;}
         public int? UserId {get; set;}
-        public User User {get; set;}
+        // public User User {get; set;}
         public int AddressId {get; set;}
         public Address Address {get; set;}
         public int OrderStatusId {get; set;}
@@ -501,7 +501,7 @@ namespace Backend_Website.Models
         public Cart Cart {get; set;}
         public Wishlist Wishlist {get; set;}
         public List<UserAddress> Addresses {get; set;}
-        public List<Order> Orders {get; set;}
+        // public List<Order> Orders {get; set;}
 
         public object this[string propertyName] {
         get{

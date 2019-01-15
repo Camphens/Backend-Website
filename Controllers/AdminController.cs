@@ -658,6 +658,7 @@ namespace Backend_Website.Controllers
                 var orders = (from o in _context.Orders
                                 where o.UserId == Id
                                 let o_i = (from entry in _context.OrderProduct
+                                            let u   = (from user in _context.Users where user.Id == Id select user)
                                             select new
                                             {
                                                 product = new 
@@ -681,9 +682,9 @@ namespace Backend_Website.Controllers
 
                                                     orderId                 = entry.Order.Id,
                                                     userId                  = entry.Order.UserId,
-                                                    userFirstName           = entry.Order.User.FirstName,
-                                                    userLastName            = entry.Order.User.LastName,
-                                                    userEmail               = entry.Order.User.EmailAddress,
+                                                    userFirstName           = u.FirstOrDefault().FirstName,
+                                                    userLastName            = u.FirstOrDefault().LastName,
+                                                    userEmail               = u.FirstOrDefault().EmailAddress,
 
                                                     addressId               = entry.Order.AddressId,
                                                     adressStreet            = entry.Order.Address.Street,
@@ -713,6 +714,7 @@ namespace Backend_Website.Controllers
                 var orders = (from o in _context.Orders
                                 where o.Id == Id
                                 let o_i = (from entry in _context.OrderProduct
+                                            let u   = (from user in _context.Users where user.Id == Id select user)
                                             select new
                                             {
                                                 product = new 
@@ -736,9 +738,9 @@ namespace Backend_Website.Controllers
 
                                                     orderId                 = entry.Order.Id,
                                                     userId                  = entry.Order.UserId,
-                                                    userFirstName           = entry.Order.User.FirstName,
-                                                    userLastName            = entry.Order.User.LastName,
-                                                    userEmail               = entry.Order.User.EmailAddress,
+                                                    userFirstName           = u.FirstOrDefault().FirstName,
+                                                    userLastName            = u.FirstOrDefault().LastName,
+                                                    userEmail               = u.FirstOrDefault().EmailAddress,
 
                                                     addressId               = entry.Order.AddressId,
                                                     adressStreet            = entry.Order.Address.Street,
