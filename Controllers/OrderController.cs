@@ -273,7 +273,8 @@ namespace Backend_Website.Controllers
                 
                 if (OrderDetails.Discount >= 0)
                 {
-                    totalPrice = totalPrice - (totalPrice * (OrderDetails.Discount/100));
+                    double discounter = OrderDetails.Discount;
+                    totalPrice = totalPrice - (totalPrice * (discounter/100));
                 }
 
                 var o = new Order
