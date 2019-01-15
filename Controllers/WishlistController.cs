@@ -309,7 +309,20 @@ namespace Backend_Website.Controllers
             }
 
             _context.SaveChanges();
+            TotalPrice(cartId[0]);
             return Ok();
+        }
+
+        public void TotalPrice(int cartId)
+        {
+            var totalPrice  = (from item in _context.CartProducts
+                                where cartId == item.CartId
+                                select (item.Product.ProductPrice * item.CartQuantity)).Sum();
+            
+            var cart        = _context.Carts.Find(cartId);
+            cart.CartTotalPrice = totalPrice;
+            _context.Carts.Update(cart);
+            _context.SaveChanges();
         }
 
     }
