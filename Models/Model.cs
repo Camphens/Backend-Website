@@ -277,6 +277,10 @@ namespace Backend_Website.Models
             .HasOne(p => p.Wishlist)
             .WithOne(p => p.User)
             .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<User>()
+            .HasMany(p => p.Addresses)
+            .WithOne(p => p.User)
+            .OnDelete(DeleteBehavior.Cascade);
 
             // UserAddress
             modelBuilder.Entity<UserAddress>()
